@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TapVault - Secure Mobile Vault</title>
+    <!-- QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
     <style>
         /* CSS Variables für Theme Support */
         :root {
@@ -552,6 +554,106 @@
             font-size: 14px;
         }
 
+        /* QR Scanner Styles */
+        .scanner-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: var(--bg-tertiary);
+        }
+        
+        #qr-reader {
+            width: 100%;
+            border-radius: var(--radius);
+        }
+        
+        .scanner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px solid var(--accent-primary);
+            border-radius: var(--radius);
+            pointer-events: none;
+        }
+        
+        .scanner-overlay::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            margin: -100px 0 0 -100px;
+            border: 2px solid var(--accent-primary);
+            border-radius: 12px;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+        }
+        
+        .scanner-instructions {
+            text-align: center;
+            margin: 20px 0;
+            color: var(--text-secondary);
+        }
+        
+        .scanner-error {
+            background: var(--error-color);
+            color: white;
+            padding: 12px;
+            border-radius: var(--radius-small);
+            margin: 16px 0;
+            text-align: center;
+        }
+        
+        .scanner-success {
+            background: var(--success-color);
+            color: white;
+            padding: 12px;
+            border-radius: var(--radius-small);
+            margin: 16px 0;
+            text-align: center;
+        }
+        
+        .camera-permission-request {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .permission-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+        
+        .camera-list {
+            margin: 20px 0;
+        }
+        
+        .camera-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--bg-card);
+            border-radius: var(--radius-small);
+            margin-bottom: 8px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+        
+        .camera-item:hover {
+            background: var(--bg-secondary);
+        }
+        
+        .camera-item.selected {
+            border-color: var(--accent-primary);
+            background: rgba(0, 122, 255, 0.1);
+        }
+
         /* Animations */
         .fade-in {
             animation: fadeIn 0.5s ease-in;
@@ -768,6 +870,69 @@
             </div>
         </div>
 
+        <!-- QR Scanner Screen -->
+        <div id="scannerScreen" class="screen">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">QR-Code Scanner</div>
+                        <div class="card-subtitle">Scannen Sie einen TapVault QR-Code</div>
+                    </div>
+                    <button class="btn btn-secondary" id="closeScannerButton">
+                        ✕ Schließen
+                    </button>
+                </div>
+                
+                <!-- Kamera-Berechtigung Anfrage -->
+                <div id="cameraPermissionRequest" class="camera-permission-request hidden">
+                    <div class="permission-icon">📷</div>
+                    <h3>Kamera-Berechtigung erforderlich</h3>
+                    <p>Um QR-Codes zu scannen, benötigen wir Zugriff auf Ihre Kamera.</p>
+                    <button class="btn btn-primary btn-full mt-2" id="requestCameraButton">
+                        📷 Kamera-Zugriff erlauben
+                    </button>
+                </div>
+                
+                <!-- Kamera Auswahl -->
+                <div id="cameraSelection" class="hidden">
+                    <h4>Kamera auswählen:</h4>
+                    <div id="cameraList" class="camera-list"></div>
+                    <button class="btn btn-primary btn-full" id="startScanningButton">
+                        ▶️ Scannen starten
+                    </button>
+                </div>
+                
+                <!-- Scanner Interface -->
+                <div id="scannerInterface" class="hidden">
+                    <div class="scanner-instructions">
+                        Richten Sie die Kamera auf einen QR-Code
+                    </div>
+                    
+                    <div class="scanner-container">
+                        <div id="qr-reader"></div>
+                        <div class="scanner-overlay"></div>
+                    </div>
+                    
+                    <div id="scannerStatus"></div>
+                    
+                    <div style="display: flex; gap: 12px; margin-top: 20px;">
+                        <button class="btn btn-secondary" id="stopScannerButton" style="flex: 1;">
+                            ⏹️ Stoppen
+                        </button>
+                        <button class="btn btn-secondary" id="switchCameraButton" style="flex: 1;">
+                            🔄 Kamera wechseln
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Scanner Fehler -->
+                <div id="scannerError" class="scanner-error hidden"></div>
+                
+                <!-- Scanner Erfolg -->
+                <div id="scannerSuccess" class="scanner-success hidden"></div>
+            </div>
+        </div>
+
         <!-- Unlock Screen -->
         <div id="unlockScreen" class="screen">
             <div class="card text-center">
@@ -913,7 +1078,7 @@
     <script>
         /**
          * TapVault Mobile App - Enterprise-Grade Architecture
-         * Modular, scalable, zero-server security vault application
+         * Modular, scalable, zero-server security vault application with QR Scanner
          */
 
         class TapVaultApp {
@@ -929,6 +1094,12 @@
                     isShakeMode: false,
                     decryptedMessage: null
                 };
+                
+                // QR Scanner properties
+                this.qrScanner = null;
+                this.availableCameras = [];
+                this.selectedCameraId = null;
+                this.scannerActive = false;
                 
                 // Shake detection variables
                 this.shakeThreshold = 15;
@@ -989,8 +1160,310 @@
                 // Modal
                 document.getElementById('modalCancel').addEventListener('click', () => this.closeModal());
                 
-                // Scanner
+                // QR Scanner Events
                 document.getElementById('scanButton').addEventListener('click', () => this.showScanner());
+                document.getElementById('closeScannerButton').addEventListener('click', () => this.closeScanner());
+                document.getElementById('requestCameraButton').addEventListener('click', () => this.requestCameraPermission());
+                document.getElementById('startScanningButton').addEventListener('click', () => this.startScanning());
+                document.getElementById('stopScannerButton').addEventListener('click', () => this.stopScanning());
+                document.getElementById('switchCameraButton').addEventListener('click', () => this.switchCamera());
+            }
+
+            // QR Scanner Methods
+            async showScanner() {
+                this.showScreen('scanner');
+                this.resetScannerUI();
+                
+                try {
+                    // Check if camera API is supported
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        this.showScannerError('Kamera-API wird von diesem Browser nicht unterstützt.');
+                        return;
+                    }
+                    
+                    // Load available cameras
+                    await this.loadAvailableCameras();
+                    
+                } catch (error) {
+                    console.error('Scanner initialization error:', error);
+                    this.showScannerError('Fehler beim Initialisieren des Scanners.');
+                }
+            }
+
+            async loadAvailableCameras() {
+                try {
+                    // First request simple permission
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    stream.getTracks().forEach(track => track.stop()); // Stop stream immediately
+                    
+                    // Now we can query available devices
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    this.availableCameras = devices.filter(device => device.kind === 'videoinput');
+                    
+                    if (this.availableCameras.length === 0) {
+                        this.showScannerError('Keine Kamera gefunden.');
+                        return;
+                    }
+                    
+                    // Select default camera (prefer back camera)
+                    this.selectedCameraId = this.findBestCamera();
+                    
+                    // Start scanning directly
+                    this.startScanning();
+                    
+                } catch (error) {
+                    console.error('Camera access error:', error);
+                    if (error.name === 'NotAllowedError') {
+                        this.showCameraPermissionRequest();
+                    } else if (error.name === 'NotFoundError') {
+                        this.showScannerError('Keine Kamera gefunden.');
+                    } else {
+                        this.showScannerError('Fehler beim Zugriff auf die Kamera: ' + error.message);
+                    }
+                }
+            }
+
+            findBestCamera() {
+                // Try to find back camera
+                const backCamera = this.availableCameras.find(camera => 
+                    camera.label.toLowerCase().includes('back') || 
+                    camera.label.toLowerCase().includes('rear') ||
+                    camera.label.toLowerCase().includes('environment')
+                );
+                
+                return backCamera ? backCamera.deviceId : this.availableCameras[0].deviceId;
+            }
+
+            showCameraPermissionRequest() {
+                document.getElementById('cameraPermissionRequest').classList.remove('hidden');
+                document.getElementById('cameraSelection').classList.add('hidden');
+                document.getElementById('scannerInterface').classList.add('hidden');
+            }
+
+            async requestCameraPermission() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { 
+                            facingMode: 'environment' // Prefer back camera
+                        } 
+                    });
+                    stream.getTracks().forEach(track => track.stop());
+                    
+                    await this.loadAvailableCameras();
+                    
+                } catch (error) {
+                    console.error('Permission request error:', error);
+                    this.showScannerError('Kamera-Berechtigung wurde verweigert oder Kamera ist nicht verfügbar.');
+                }
+            }
+
+            async startScanning() {
+                try {
+                    this.showScannerInterface();
+                    
+                    if (this.qrScanner) {
+                        await this.qrScanner.stop();
+                    }
+                    
+                    this.qrScanner = new Html5Qrcode("qr-reader");
+                    
+                    const config = {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 },
+                        aspectRatio: 1.0
+                    };
+                    
+                    await this.qrScanner.start(
+                        this.selectedCameraId,
+                        config,
+                        this.onScanSuccess.bind(this),
+                        this.onScanFailure.bind(this)
+                    );
+                    
+                    this.scannerActive = true;
+                    this.showScannerStatus('Scanner aktiv - QR-Code vor die Kamera halten');
+                    
+                } catch (error) {
+                    console.error('Start scanning error:', error);
+                    this.showScannerError('Fehler beim Starten des Scanners: ' + error.message);
+                }
+            }
+
+            async stopScanning() {
+                try {
+                    if (this.qrScanner && this.scannerActive) {
+                        await this.qrScanner.stop();
+                        this.scannerActive = false;
+                        this.showScannerStatus('Scanner gestoppt');
+                    }
+                } catch (error) {
+                    console.error('Stop scanning error:', error);
+                }
+            }
+
+            async switchCamera() {
+                if (this.availableCameras.length <= 1) return;
+                
+                const currentIndex = this.availableCameras.findIndex(camera => camera.deviceId === this.selectedCameraId);
+                const nextIndex = (currentIndex + 1) % this.availableCameras.length;
+                this.selectedCameraId = this.availableCameras[nextIndex].deviceId;
+                
+                if (this.scannerActive) {
+                    await this.stopScanning();
+                    await this.startScanning();
+                }
+            }
+
+            onScanSuccess(decodedText, decodedResult) {
+                console.log('QR Code detected:', decodedText);
+                
+                try {
+                    // Try to parse as TapVault URL
+                    if (this.isValidTapVaultUrl(decodedText)) {
+                        this.handleTapVaultUrl(decodedText);
+                        this.showScannerSuccess('TapVault QR-Code erfolgreich gescannt!');
+                        setTimeout(() => this.closeScanner(), 2000);
+                    } else {
+                        this.showScannerError('Dies ist kein gültiger TapVault QR-Code.');
+                    }
+                } catch (error) {
+                    console.error('QR processing error:', error);
+                    this.showScannerError('Fehler beim Verarbeiten des QR-Codes.');
+                }
+            }
+
+            onScanFailure(error) {
+                // Silent handling of scan failures (normal during scanning)
+            }
+
+            isValidTapVaultUrl(url) {
+                try {
+                    // Validate URL
+                    const urlObj = new URL(url);
+                    
+                    // Check if it's a TapVault URL
+                    if (urlObj.pathname.includes('/unlock') || urlObj.searchParams.has('vault')) {
+                        return true;
+                    }
+                    
+                    // Also accept direct vault data (Base64)
+                    if (url.startsWith('tapvault:') || this.isBase64VaultData(url)) {
+                        return true;
+                    }
+                    
+                    return false;
+                } catch {
+                    // If not a valid URL, check if it's vault data
+                    return this.isBase64VaultData(url);
+                }
+            }
+
+            isBase64VaultData(data) {
+                try {
+                    const decoded = atob(data);
+                    const parsed = JSON.parse(decoded);
+                    return parsed.hasOwnProperty('encryptedData') && parsed.hasOwnProperty('salt');
+                } catch {
+                    return false;
+                }
+            }
+
+            handleTapVaultUrl(url) {
+                try {
+                    let vaultData;
+                    
+                    if (url.startsWith('tapvault:')) {
+                        // Direct vault data format
+                        const data = url.replace('tapvault:', '');
+                        vaultData = JSON.parse(atob(data));
+                    } else if (this.isBase64VaultData(url)) {
+                        // Direct Base64 vault data
+                        vaultData = JSON.parse(atob(url));
+                    } else {
+                        // URL with parameters
+                        const urlObj = new URL(url);
+                        const vaultParam = urlObj.searchParams.get('vault');
+                        if (vaultParam) {
+                            vaultData = JSON.parse(atob(vaultParam));
+                        }
+                    }
+                    
+                    if (vaultData) {
+                        this.openVaultFromQR(vaultData);
+                    }
+                    
+                } catch (error) {
+                    console.error('URL handling error:', error);
+                    this.showScannerError('Fehler beim Verarbeiten der Vault-Daten.');
+                }
+            }
+
+            openVaultFromQR(vaultData) {
+                // Prepare unlock screen with scanned data
+                this.unlockState.vaultData = vaultData;
+                this.unlockState.requiredActions = vaultData.requiredActions || 50;
+                this.unlockState.mode = vaultData.mode || 'tap';
+                this.unlockState.currentActions = 0;
+                this.unlockState.isShakeMode = vaultData.mode === 'shake';
+                
+                // Update UI
+                document.getElementById('unlockTitle').textContent = vaultData.title || 'Gesperrter Tresor';
+                document.getElementById('requiredActions').textContent = this.unlockState.requiredActions;
+                document.getElementById('unlockMode').textContent = this.unlockState.isShakeMode ? 'Shake-Aktionen' : 'Taps';
+                document.getElementById('progressSubtitle').textContent = this.unlockState.isShakeMode ? 'Shake-Aktionen ausgeführt' : 'Taps ausgeführt';
+                
+                // Adapt unlock button
+                const unlockButton = document.getElementById('unlockButton');
+                const unlockButtonText = document.getElementById('unlockButtonText');
+                
+                if (this.unlockState.isShakeMode) {
+                    unlockButton.classList.add('shake-mode');
+                    unlockButtonText.textContent = 'SHAKE';
+                } else {
+                    unlockButton.classList.remove('shake-mode');
+                    unlockButtonText.textContent = 'TAP';
+                }
+                
+                this.updateUnlockProgress();
+                this.showScreen('unlock');
+            }
+
+            showScannerInterface() {
+                document.getElementById('cameraPermissionRequest').classList.add('hidden');
+                document.getElementById('cameraSelection').classList.add('hidden');
+                document.getElementById('scannerInterface').classList.remove('hidden');
+            }
+
+            showScannerStatus(message) {
+                const statusElement = document.getElementById('scannerStatus');
+                statusElement.innerHTML = `<div class="scanner-instructions">${message}</div>`;
+            }
+
+            showScannerError(message) {
+                const errorElement = document.getElementById('scannerError');
+                errorElement.textContent = message;
+                errorElement.classList.remove('hidden');
+                setTimeout(() => errorElement.classList.add('hidden'), 5000);
+            }
+
+            showScannerSuccess(message) {
+                const successElement = document.getElementById('scannerSuccess');
+                successElement.textContent = message;
+                successElement.classList.remove('hidden');
+                setTimeout(() => successElement.classList.add('hidden'), 3000);
+            }
+
+            resetScannerUI() {
+                document.getElementById('scannerError').classList.add('hidden');
+                document.getElementById('scannerSuccess').classList.add('hidden');
+                document.getElementById('cameraPermissionRequest').classList.add('hidden');
+                document.getElementById('cameraSelection').classList.add('hidden');
+                document.getElementById('scannerInterface').classList.add('hidden');
+            }
+
+            async closeScanner() {
+                await this.stopScanning();
+                this.showScreen('home');
             }
 
             // Screen Management
@@ -1000,27 +1473,27 @@
                     screen.classList.remove('active');
                 });
                 
-                // Show target screen
-                const targetScreen = document.getElementById(`${screenName}Screen`);
-                if (targetScreen) {
-                    targetScreen.classList.add('active');
-                    targetScreen.classList.add('fade-in');
-                    this.currentScreen = screenName;
+                // Close scanner if switching to another screen
+                if (screenName !== 'scanner' && this.scannerActive) {
+                    this.stopScanning();
                 }
                 
                 // Update navigation
                 document.querySelectorAll('.nav-item').forEach(item => {
                     item.classList.remove('active');
-                    if (item.dataset.screen === screenName) {
-                        item.classList.add('active');
-                    }
                 });
                 
-                // Update screen content
-                if (screenName === 'vaults') {
-                    this.updateVaultsList();
-                } else if (screenName === 'home') {
-                    this.updateRecentVaults();
+                // Show target screen
+                const targetScreen = document.getElementById(screenName + 'Screen');
+                if (targetScreen) {
+                    targetScreen.classList.add('active');
+                    this.currentScreen = screenName;
+                    
+                    // Mark navigation (only for main screens)
+                    const navItem = document.querySelector(`[data-screen="${screenName}"]`);
+                    if (navItem) {
+                        navItem.classList.add('active');
+                    }
                 }
             }
 
@@ -1029,324 +1502,186 @@
                 // Reset form
                 document.getElementById('messageInput').value = '';
                 document.getElementById('titleInput').value = '';
-                document.getElementById('actionSlider').value = this.settings.defaultActions;
-                document.getElementById('actionValue').textContent = this.settings.defaultActions;
+                // Apply default values from settings
+                const defaultMode = this.settings.defaultMode === 'shake';
+                const defaultActions = this.settings.defaultActions || 50;
                 
-                // Set default mode
-                const toggle = document.getElementById('modeToggle');
-                if (this.settings.defaultMode === 'shake') {
-                    toggle.classList.add('active');
-                    document.getElementById('modeLabel').textContent = 'Shake-Modus';
-                    document.getElementById('actionLabel').textContent = 'Shakes erforderlich';
-                } else {
-                    toggle.classList.remove('active');
-                    document.getElementById('modeLabel').textContent = 'Tap-Modus';
-                    document.getElementById('actionLabel').textContent = 'Taps erforderlich';
-                }
-            }
-
-            showScanner() {
-                // In a real app, this would open the camera for QR scanning
-                // For now, we'll show a prompt for the vault ID
-                const vaultId = prompt('Geben Sie die Tresor-ID ein:');
-                if (vaultId) {
-                    this.loadVaultFromId(vaultId);
-                }
+                this.updateToggle('modeToggle', defaultMode);
+                document.getElementById('actionSlider').value = defaultActions;
+                this.updateSliderValue({ target: { value: defaultActions } });
             }
 
             // Vault Management
             createVault() {
                 const message = document.getElementById('messageInput').value.trim();
-                const title = document.getElementById('titleInput').value.trim() || 'Unbenannter Tresor';
-                const mode = document.getElementById('modeToggle').classList.contains('active') ? 'shake' : 'tap';
-                const requiredActions = parseInt(document.getElementById('actionSlider').value);
+                const title = document.getElementById('titleInput').value.trim();
                 
                 if (!message) {
-                    this.showToast('Bitte geben Sie eine Nachricht ein', 'error');
+                    this.showModal('Fehler', 'Bitte geben Sie eine Nachricht ein.');
                     return;
                 }
                 
-                // Generate unique ID
-                const vaultId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+                const isShakeMode = document.getElementById('modeToggle').classList.contains('active');
+                const requiredActions = parseInt(document.getElementById('actionSlider').value);
                 
-                // Encrypt the message
-                const encryptedData = this.encryptMessage(message, requiredActions, mode);
-                
-                // Create vault object
-                const vault = {
-                    id: vaultId,
-                    title: title,
-                    mode: mode,
-                    requiredActions: requiredActions,
-                    encryptedData: encryptedData,
-                    createdAt: new Date().toISOString(),
-                    accessCount: 0
-                };
-                
-                // Save vault
-                this.vaults.push(vault);
-                this.saveVaults();
-                
-                // Show success
-                this.showModal(
-                    'Tresor erstellt! 🎉',
-                    `Ihr Tresor wurde erfolgreich erstellt. Tresor-ID: ${vaultId}`,
-                    () => {
-                        this.shareVault(vault);
-                        this.showScreen('vaults');
-                    }
-                );
-                
-                // Haptic feedback
-                this.hapticFeedback();
-            }
-
-            encryptMessage(message, requiredActions, mode) {
-                // Simple encryption for demo - in production, use proper AES-GCM
-                const key = requiredActions.toString() + mode;
-                const encrypted = btoa(message); // Base64 encode for demo
-                return {
-                    data: encrypted,
-                    salt: this.generateSalt(),
-                    iv: this.generateSalt()
-                };
-            }
-
-            decryptMessage(encryptedData, actions, mode) {
-                // Simple decryption for demo
                 try {
-                    const decrypted = atob(encryptedData.data);
-                    return decrypted;
-                } catch (e) {
-                    return null;
+                    const vault = this.encryptMessage(message, title, isShakeMode ? 'shake' : 'tap', requiredActions);
+                    this.vaults.unshift(vault);
+                    this.saveVaults();
+                    this.updateRecentVaults();
+                    this.updateVaultsList();
+                    
+                    this.showShareModal(vault);
+                    
+                } catch (error) {
+                    console.error('Vault creation error:', error);
+                    this.showModal('Fehler', 'Fehler beim Erstellen des Tresors.');
                 }
             }
 
-            generateSalt() {
-                const array = new Uint8Array(this.settings.saltLength);
-                window.crypto.getRandomValues(array);
-                return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-            }
-
-            shareVault(vault) {
-                const shareUrl = `${window.location.origin}${window.location.pathname}#vault=${vault.id}`;
+            encryptMessage(message, title, mode, requiredActions) {
+                // Generate salt and key
+                const salt = crypto.getRandomValues(new Uint8Array(this.settings.saltLength || 16));
+                const encoder = new TextEncoder();
+                const data = encoder.encode(message);
                 
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'TapVault Tresor',
-                        text: `Ich habe einen sicheren Tresor für dich erstellt. ${vault.requiredActions} ${vault.mode === 'tap' ? 'Taps' : 'Shakes'} zum Öffnen!`,
-                        url: shareUrl
+                // Create deterministic key based on actions
+                const actionKey = this.generateActionKey(requiredActions, mode);
+                const key = this.deriveKey(actionKey, salt);
+                
+                return crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['encrypt'])
+                    .then(cryptoKey => {
+                        const iv = crypto.getRandomValues(new Uint8Array(12));
+                        return crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cryptoKey, data)
+                            .then(encrypted => {
+                                const vault = {
+                                    id: Date.now().toString(),
+                                    title: title || 'Unbenannter Tresor',
+                                    encryptedData: Array.from(new Uint8Array(encrypted)),
+                                    salt: Array.from(salt),
+                                    iv: Array.from(iv),
+                                    requiredActions,
+                                    mode,
+                                    created: new Date().toISOString()
+                                };
+                                return vault;
+                            });
                     });
-                } else {
-                    // Fallback: Copy to clipboard
-                    navigator.clipboard.writeText(shareUrl);
-                    this.showToast('Link kopiert!', 'success');
-                }
             }
 
-            loadVaultFromId(vaultId) {
-                const vault = this.vaults.find(v => v.id === vaultId);
-                if (vault) {
-                    this.startUnlockProcess(vault);
-                } else {
-                    this.showToast('Tresor nicht gefunden', 'error');
-                }
+            generateActionKey(actions, mode) {
+                // Create a deterministic key based on actions and mode
+                const baseString = `tapvault_${mode}_${actions}`;
+                const encoder = new TextEncoder();
+                return crypto.subtle.digest('SHA-256', encoder.encode(baseString))
+                    .then(hash => new Uint8Array(hash));
             }
 
-            startUnlockProcess(vault) {
-                this.unlockState = {
-                    currentActions: 0,
-                    requiredActions: vault.requiredActions,
-                    mode: vault.mode,
-                    vaultData: vault,
-                    isShakeMode: vault.mode === 'shake',
-                    decryptedMessage: null
+            deriveKey(actionKey, salt) {
+                // Simple key derivation - in production, use PBKDF2
+                return Promise.resolve(actionKey.then(key => {
+                    const combined = new Uint8Array(key.length + salt.length);
+                    combined.set(key);
+                    combined.set(salt, key.length);
+                    return crypto.subtle.digest('SHA-256', combined).then(hash => new Uint8Array(hash));
+                }));
+            }
+
+            // Settings Management
+            loadSettings() {
+                const defaultSettings = {
+                    defaultMode: 'tap',
+                    defaultActions: 50,
+                    darkMode: true,
+                    hapticFeedback: true,
+                    saltLength: 16
                 };
                 
-                // Update UI
-                document.getElementById('unlockTitle').textContent = vault.title;
-                document.getElementById('requiredActions').textContent = vault.requiredActions;
-                document.getElementById('unlockMode').textContent = vault.mode === 'tap' ? 'Taps' : 'Shakes';
-                document.getElementById('progressText').textContent = `0 / ${vault.requiredActions}`;
-                document.getElementById('progressSubtitle').textContent = `${vault.mode === 'tap' ? 'Taps' : 'Shakes'} ausgeführt`;
+                try {
+                    const saved = localStorage.getItem('tapvault_settings');
+                    return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
+                } catch {
+                    return defaultSettings;
+                }
+            }
+
+            saveSettings() {
+                localStorage.setItem('tapvault_settings', JSON.stringify(this.settings));
+            }
+
+            applySettings() {
+                // Apply theme
+                document.body.setAttribute('data-theme', this.settings.darkMode ? 'dark' : 'light');
+                document.getElementById('themeToggle').textContent = this.settings.darkMode ? '🌙' : '☀️';
                 
-                // Update button
-                const button = document.getElementById('unlockButton');
-                if (vault.mode === 'shake') {
-                    button.classList.add('shake-mode');
-                    document.getElementById('unlockButtonText').textContent = '🔀 SHAKE';
+                // Update settings UI
+                this.updateToggle('defaultModeToggle', this.settings.defaultMode === 'shake');
+                this.updateToggle('darkModeToggle', this.settings.darkMode);
+                this.updateToggle('hapticToggle', this.settings.hapticFeedback);
+                
+                document.getElementById('defaultActions').value = this.settings.defaultActions;
+                document.getElementById('saltLength').value = this.settings.saltLength;
+            }
+
+            // UI Helpers
+            updateToggle(toggleId, isActive) {
+                const toggle = document.getElementById(toggleId);
+                if (isActive) {
+                    toggle.classList.add('active');
                 } else {
-                    button.classList.remove('shake-mode');
-                    document.getElementById('unlockButtonText').textContent = 'TAP';
-                }
-                
-                // Reset progress
-                this.updateProgress(0);
-                
-                // Hide decrypted message
-                document.getElementById('decryptedMessage').classList.add('hidden');
-                
-                // Show unlock screen
-                this.showScreen('unlock');
-                
-                // Start shake detection if needed
-                if (vault.mode === 'shake') {
-                    this.startShakeDetection();
+                    toggle.classList.remove('active');
                 }
             }
 
-            handleUnlockAction() {
-                if (this.unlockState.mode === 'tap') {
-                    this.handleTap();
-                } else {
-                    this.showToast('Schütteln Sie Ihr Gerät!', 'info');
+            updateSliderValue(e) {
+                const value = e.target.value;
+                document.getElementById('actionValue').textContent = value;
+                
+                const isShakeMode = document.getElementById('modeToggle').classList.contains('active');
+                document.getElementById('actionLabel').textContent = 
+                    isShakeMode ? 'Shake-Aktionen erforderlich' : 'Taps erforderlich';
+            }
+
+            toggleMode() {
+                const toggle = document.getElementById('modeToggle');
+                const label = document.getElementById('modeLabel');
+                const actionLabel = document.getElementById('actionLabel');
+                
+                toggle.classList.toggle('active');
+                const isShakeMode = toggle.classList.contains('active');
+                
+                label.textContent = isShakeMode ? 'Shake-Modus' : 'Tap-Modus';
+                actionLabel.textContent = isShakeMode ? 'Shake-Aktionen erforderlich' : 'Taps erforderlich';
+            }
+
+            // Vault Storage
+            loadVaults() {
+                try {
+                    const saved = localStorage.getItem('tapvault_vaults');
+                    return saved ? JSON.parse(saved) : [];
+                } catch {
+                    return [];
                 }
             }
 
-            handleTap() {
-                if (this.unlockState.decryptedMessage) return;
-                
-                this.unlockState.currentActions++;
-                this.updateProgress(this.unlockState.currentActions);
-                
-                // Haptic feedback
-                this.hapticFeedback();
-                
-                // Check if complete
-                if (this.unlockState.currentActions >= this.unlockState.requiredActions) {
-                    this.unlockVault();
-                }
+            saveVaults() {
+                localStorage.setItem('tapvault_vaults', JSON.stringify(this.vaults));
             }
 
-            updateProgress(current) {
-                const percentage = (current / this.unlockState.requiredActions) * 100;
-                const circumference = 2 * Math.PI * 54;
-                const offset = circumference - (percentage / 100) * circumference;
-                
-                document.getElementById('progressCircle').style.strokeDasharray = `${circumference - offset} ${circumference}`;
-                document.getElementById('progressText').textContent = `${current} / ${this.unlockState.requiredActions}`;
-            }
-
-            unlockVault() {
-                const vault = this.unlockState.vaultData;
-                const decrypted = this.decryptMessage(
-                    vault.encryptedData,
-                    this.unlockState.requiredActions,
-                    this.unlockState.mode
-                );
-                
-                if (decrypted) {
-                    this.unlockState.decryptedMessage = decrypted;
-                    document.getElementById('decryptedText').textContent = decrypted;
-                    document.getElementById('decryptedMessage').classList.remove('hidden');
-                    
-                    // Update access count
-                    vault.accessCount++;
-                    this.saveVaults();
-                    
-                    // Success feedback
-                    this.hapticFeedback('success');
-                    document.getElementById('unlockButton').style.display = 'none';
-                } else {
-                    this.showToast('Entschlüsselung fehlgeschlagen', 'error');
-                }
-            }
-
-            copyDecryptedMessage() {
-                if (this.unlockState.decryptedMessage) {
-                    navigator.clipboard.writeText(this.unlockState.decryptedMessage);
-                    this.showToast('Nachricht kopiert!', 'success');
-                    this.hapticFeedback();
-                }
-            }
-
-            // Shake Detection
-            setupShakeDetection() {
-                if (window.DeviceMotionEvent) {
-                    window.addEventListener('devicemotion', (e) => this.handleMotion(e));
-                } else {
-                    console.log('Device motion not supported');
-                }
-            }
-
-            startShakeDetection() {
-                this.shakeCount = 0;
-                this.lastShakeTime = 0;
-            }
-
-            handleMotion(event) {
-                if (!this.unlockState.isShakeMode || this.unlockState.decryptedMessage) return;
-                
-                const current = event.accelerationIncludingGravity;
-                if (!current) return;
-                
-                if (this.lastX !== null) {
-                    const deltaX = Math.abs(current.x - this.lastX);
-                    const deltaY = Math.abs(current.y - this.lastY);
-                    const deltaZ = Math.abs(current.z - this.lastZ);
-                    
-                    if (deltaX + deltaY + deltaZ > this.shakeThreshold) {
-                        const now = Date.now();
-                        if (now - this.lastShakeTime > 300) {
-                            this.lastShakeTime = now;
-                            this.handleShake();
-                        }
-                    }
-                }
-                
-                this.lastX = current.x;
-                this.lastY = current.y;
-                this.lastZ = current.z;
-            }
-
-            handleShake() {
-                this.unlockState.currentActions++;
-                this.updateProgress(this.unlockState.currentActions);
-                
-                // Haptic feedback
-                this.hapticFeedback();
-                
-                // Visual feedback
-                document.getElementById('unlockButton').classList.add('shake-animation');
-                setTimeout(() => {
-                    document.getElementById('unlockButton').classList.remove('shake-animation');
-                }, 500);
-                
-                // Check if complete
-                if (this.unlockState.currentActions >= this.unlockState.requiredActions) {
-                    this.unlockVault();
-                }
-            }
-
-            // UI Updates
             updateRecentVaults() {
                 const container = document.getElementById('recentVaults');
-                const recentVaults = this.vaults.slice(-3).reverse();
+                const recent = this.vaults.slice(0, 3);
                 
-                if (recentVaults.length === 0) {
+                if (recent.length === 0) {
                     container.innerHTML = `
                         <div class="empty-state">
                             <div class="empty-icon">🗃️</div>
                             <div>Noch keine Tresore erstellt</div>
                         </div>
                     `;
-                    return;
+                } else {
+                    container.innerHTML = recent.map(vault => this.createVaultItemHTML(vault)).join('');
                 }
-                
-                container.innerHTML = recentVaults.map(vault => `
-                    <div class="vault-item" onclick="app.startUnlockProcess(app.vaults.find(v => v.id === '${vault.id}'))">
-                        <div class="vault-icon">${vault.mode === 'tap' ? '👆' : '🔀'}</div>
-                        <div class="vault-info">
-                            <div class="vault-title">${vault.title}</div>
-                            <div class="vault-meta">${vault.requiredActions} ${vault.mode === 'tap' ? 'Taps' : 'Shakes'} • ${this.formatDate(vault.createdAt)}</div>
-                        </div>
-                        <div class="vault-actions">
-                            <button class="icon-button" onclick="event.stopPropagation(); app.shareVault(app.vaults.find(v => v.id === '${vault.id}'))">
-                                📤
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
             }
 
             updateVaultsList() {
@@ -1359,293 +1694,15 @@
                             <div>Noch keine Tresore erstellt</div>
                         </div>
                     `;
-                    return;
-                }
-                
-                container.innerHTML = this.vaults.map(vault => `
-                    <div class="vault-item" onclick="app.startUnlockProcess(app.vaults.find(v => v.id === '${vault.id}'))">
-                        <div class="vault-icon">${vault.mode === 'tap' ? '👆' : '🔀'}</div>
-                        <div class="vault-info">
-                            <div class="vault-title">${vault.title}</div>
-                            <div class="vault-meta">${vault.requiredActions} ${vault.mode === 'tap' ? 'Taps' : 'Shakes'} • ${vault.accessCount} Zugriffe</div>
-                        </div>
-                        <div class="vault-actions">
-                            <button class="icon-button" onclick="event.stopPropagation(); app.shareVault(app.vaults.find(v => v.id === '${vault.id}'))">
-                                📤
-                            </button>
-                            <button class="icon-button" onclick="event.stopPropagation(); app.deleteVault('${vault.id}')">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            deleteVault(vaultId) {
-                this.showModal(
-                    'Tresor löschen?',
-                    'Dieser Vorgang kann nicht rückgängig gemacht werden.',
-                    () => {
-                        this.vaults = this.vaults.filter(v => v.id !== vaultId);
-                        this.saveVaults();
-                        this.updateVaultsList();
-                        this.showToast('Tresor gelöscht', 'success');
-                    }
-                );
-            }
-
-            // Settings
-            toggleTheme() {
-                const body = document.body;
-                const isDark = body.getAttribute('data-theme') === 'dark';
-                body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-                
-                // Update icon
-                document.getElementById('themeToggle').textContent = isDark ? '☀️' : '🌙';
-                
-                // Update settings
-                this.settings.darkMode = !isDark;
-                this.saveSettings();
-                
-                // Update toggle
-                const toggle = document.getElementById('darkModeToggle');
-                if (!isDark) {
-                    toggle.classList.add('active');
                 } else {
-                    toggle.classList.remove('active');
+                    container.innerHTML = this.vaults.map(vault => this.createVaultItemHTML(vault, true)).join('');
                 }
             }
 
-            toggleMode() {
-                const toggle = document.getElementById('modeToggle');
-                const isShake = toggle.classList.contains('active');
+            createVaultItemHTML(vault, showActions = false) {
+                const date = new Date(vault.created).toLocaleDateString('de-DE');
+                const mode = vault.mode === 'shake' ? 'Shake' : 'Tap';
                 
-                if (isShake) {
-                    toggle.classList.remove('active');
-                    document.getElementById('modeLabel').textContent = 'Tap-Modus';
-                    document.getElementById('actionLabel').textContent = 'Taps erforderlich';
-                } else {
-                    toggle.classList.add('active');
-                    document.getElementById('modeLabel').textContent = 'Shake-Modus';
-                    document.getElementById('actionLabel').textContent = 'Shakes erforderlich';
-                }
-            }
-
-            toggleDefaultMode() {
-                const toggle = document.getElementById('defaultModeToggle');
-                const isShake = toggle.classList.contains('active');
-                
-                if (isShake) {
-                    toggle.classList.remove('active');
-                    this.settings.defaultMode = 'tap';
-                } else {
-                    toggle.classList.add('active');
-                    this.settings.defaultMode = 'shake';
-                }
-                
-                this.saveSettings();
-            }
-
-            toggleHaptic() {
-                const toggle = document.getElementById('hapticToggle');
-                const isActive = toggle.classList.contains('active');
-                
-                if (isActive) {
-                    toggle.classList.remove('active');
-                    this.settings.hapticFeedback = false;
-                } else {
-                    toggle.classList.add('active');
-                    this.settings.hapticFeedback = true;
-                }
-                
-                this.saveSettings();
-            }
-
-            updateSliderValue(event) {
-                const value = event.target.value;
-                document.getElementById('actionValue').textContent = value;
-            }
-
-            updateDefaultActions(event) {
-                this.settings.defaultActions = parseInt(event.target.value);
-                this.saveSettings();
-            }
-
-            updateSaltLength(event) {
-                this.settings.saltLength = parseInt(event.target.value);
-                this.saveSettings();
-            }
-
-            // Utilities
-            formatDate(isoDate) {
-                const date = new Date(isoDate);
-                const now = new Date();
-                const diffMs = now - date;
-                const diffMins = Math.floor(diffMs / 60000);
-                
-                if (diffMins < 1) return 'Gerade eben';
-                if (diffMins < 60) return `Vor ${diffMins} Min.`;
-                if (diffMins < 1440) return `Vor ${Math.floor(diffMins / 60)} Std.`;
-                return `Vor ${Math.floor(diffMins / 1440)} Tagen`;
-            }
-
-            hapticFeedback(type = 'light') {
-                if (!this.settings.hapticFeedback) return;
-                
-                if (navigator.vibrate) {
-                    switch (type) {
-                        case 'light':
-                            navigator.vibrate(10);
-                            break;
-                        case 'success':
-                            navigator.vibrate([50, 100, 50]);
-                            break;
-                        case 'error':
-                            navigator.vibrate([100, 50, 100]);
-                            break;
-                    }
-                }
-            }
-
-            showToast(message, type = 'info') {
-                // Simple toast implementation
-                const toast = document.createElement('div');
-                toast.className = 'toast ' + type;
-                toast.textContent = message;
-                toast.style.cssText = `
-                    position: fixed;
-                    bottom: 100px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: ${type === 'error' ? 'var(--error-color)' : type === 'success' ? 'var(--success-color)' : 'var(--accent-primary)'};
-                    color: white;
-                    padding: 16px 24px;
-                    border-radius: var(--radius);
-                    box-shadow: var(--shadow);
-                    z-index: 3000;
-                    animation: fadeIn 0.3s ease-in;
-                `;
-                
-                document.body.appendChild(toast);
-                
-                setTimeout(() => {
-                    toast.style.animation = 'fadeOut 0.3s ease-out';
-                    setTimeout(() => toast.remove(), 300);
-                }, 3000);
-            }
-
-            showModal(title, text, onConfirm) {
-                const modal = document.getElementById('modal');
-                document.getElementById('modalTitle').textContent = title;
-                document.getElementById('modalText').textContent = text;
-                
-                // Update confirm button
-                const confirmBtn = document.getElementById('modalConfirm');
-                confirmBtn.onclick = () => {
-                    this.closeModal();
-                    if (onConfirm) onConfirm();
-                };
-                
-                modal.classList.add('active');
-            }
-
-            closeModal() {
-                document.getElementById('modal').classList.remove('active');
-            }
-
-            // Storage
-            saveVaults() {
-                try {
-                    localStorage.setItem('tapvault_vaults', JSON.stringify(this.vaults));
-                } catch (e) {
-                    console.error('Failed to save vaults:', e);
-                }
-            }
-
-            loadVaults() {
-                try {
-                    const saved = localStorage.getItem('tapvault_vaults');
-                    return saved ? JSON.parse(saved) : [];
-                } catch (e) {
-                    console.error('Failed to load vaults:', e);
-                    return [];
-                }
-            }
-
-            saveSettings() {
-                try {
-                    localStorage.setItem('tapvault_settings', JSON.stringify(this.settings));
-                } catch (e) {
-                    console.error('Failed to save settings:', e);
-                }
-            }
-
-            loadSettings() {
-                try {
-                    const saved = localStorage.getItem('tapvault_settings');
-                    const defaults = {
-                        darkMode: true,
-                        hapticFeedback: true,
-                        defaultMode: 'tap',
-                        defaultActions: 50,
-                        saltLength: 16
-                    };
-                    return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
-                } catch (e) {
-                    console.error('Failed to load settings:', e);
-                    return {
-                        darkMode: true,
-                        hapticFeedback: true,
-                        defaultMode: 'tap',
-                        defaultActions: 50,
-                        saltLength: 16
-                    };
-                }
-            }
-
-            applySettings() {
-                // Apply theme
-                if (!this.settings.darkMode) {
-                    document.body.setAttribute('data-theme', 'light');
-                    document.getElementById('themeToggle').textContent = '☀️';
-                    document.getElementById('darkModeToggle').classList.remove('active');
-                }
-                
-                // Apply other settings
-                document.getElementById('defaultActions').value = this.settings.defaultActions;
-                document.getElementById('saltLength').value = this.settings.saltLength;
-                
-                if (this.settings.defaultMode === 'shake') {
-                    document.getElementById('defaultModeToggle').classList.add('active');
-                }
-                
-                if (!this.settings.hapticFeedback) {
-                    document.getElementById('hapticToggle').classList.remove('active');
-                }
-            }
-
-            // Deep linking
-            checkDeepLink() {
-                const hash = window.location.hash;
-                if (hash.startsWith('#vault=')) {
-                    const vaultId = hash.substring(7);
-                    this.loadVaultFromId(vaultId);
-                }
-            }
-        }
-
-        // Initialize app
-        const app = new TapVaultApp();
-
-        // Add fade-out animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeOut {
-                from { opacity: 1; transform: translateY(0); }
-                to { opacity: 0; transform: translateY(20px); }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
-</body>
-</html>
+                return `
+                    <div class="vault-item" onclick="app.openVault('${vault.id}')">
+                        <div class="vault-icon">${vault.mode === 'shake' ? '📳' : '👆'}</div>
