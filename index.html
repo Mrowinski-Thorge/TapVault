@@ -1537,199 +1537,527 @@
                 </div>
             </div>
         </div>
-
-        <!-- Bottom Navigation -->
-        <nav class="bottom-nav" role="navigation" aria-label="Hauptnavigation">
-            <div class="nav-item active" data-screen="home" tabindex="0" role="button" aria-label="Startseite">
+           <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" data-screen="home">
                 <div class="nav-icon">🏠</div>
                 <div class="nav-label">Home</div>
             </div>
-            <div class="nav-item" data-screen="create" tabindex="0" role="button" aria-label="Tresor erstellen">
-                <div class="nav-icon">➕</div>
+            <div class="nav-item" data-screen="create">
+                <div class="nav-icon">🔒</div>
                 <div class="nav-label">Erstellen</div>
             </div>
-            <div class="nav-item" data-screen="scanner" tabindex="0" role="button" aria-label="QR-Scanner">
-                <div class="nav-icon">📷</div>
-                <div class="nav-label">Scanner</div>
-            </div>
-            <div class="nav-item" data-screen="settings" tabindex="0" role="button" aria-label="Einstellungen">
+            <div class="nav-item" data-screen="settings">
                 <div class="nav-icon">⚙️</div>
                 <div class="nav-label">Einstellungen</div>
             </div>
         </nav>
+    </div>
 
-        <!-- Modal -->
-        <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-            <div class="modal-content">
-                <div class="modal-title" id="modalTitle">Titel</div>
-                <div class="modal-text" id="modalText">Text</div>
-                <div class="modal-actions">
-                    <button class="btn btn-secondary" id="modalCancel">Abbrechen</button>
-                    <button class="btn btn-primary" id="modalConfirm">Bestätigen</button>
-                </div>
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">Titel</div>
+            <div class="modal-text" id="modalText">Text</div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="modalCancel">Abbrechen</button>
+                <button class="btn btn-primary" id="modalConfirm">Bestätigen</button>
             </div>
-        </div>
-
-        <!-- Toast Notification -->
-        <div id="toast" class="hidden" style="position: fixed; top: 20px; right: 20px; background: var(--success-color); color: white; padding: 12px 20px; border-radius: var(--radius); z-index: 3000; box-shadow: var(--shadow);">
-            <div id="toastMessage"></div>
         </div>
     </div>
 
-    <!-- QR Code Library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    
     <script>
-        class TapVault {
+        /**
+         * TapVault Mobile App - Complete Implementation
+         */
+        class TapVaultApp {
             constructor() {
                 this.currentScreen = 'home';
-                this.currentVaultLink = null;
-                this.currentStream = null;
-                this.qrScanner = null;
                 this.unlockState = {
-                    isShakeMode: false,
                     currentActions: 0,
-                    requiredActions: 50,
-                    lastShake: 0,
-                    shakeThreshold: 10,
-                    encryptedData: null,
-                    isComplete: false,
-                    vaultTitle: ''
+                    requiredActions: 0,
+                    mode: 'tap',
+                    vaultData: null,
+                    isShakeMode: false,
+                    decryptedMessage: null
                 };
-                this.settings = this.loadSettings();
-                this.shakeDetection = {
-                    lastX: null,
-                    lastY: null,
-                    lastZ: null,
-                    lastUpdate: 0,
-                    shakeThreshold: 10
-                };
-
+                
+                this.shakeThreshold = 15;
+                this.lastX = null;
+                this.lastY = null;
+                this.lastZ = null;
+                this.lastShakeTime = 0;
+                
                 this.init();
             }
 
             init() {
                 this.bindEvents();
                 this.setupShakeDetection();
-                this.applySettings();
-                this.checkDeepLink();
-                this.updateBrowserCompatibility();
-                this.setupAccessibility();
-            }
-
-            loadSettings() {
-                const defaults = {
-                    darkMode: true,
-                    hapticFeedback: true,
-                    defaultMode: 'tap',
-                    defaultActions: 50,
-                    autoCamera: true,
-                    animations: true
-                };
-                
-                const saved = localStorage.getItem('tapvault_settings');
-                return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
-            }
-
-            saveSettings() {
-                localStorage.setItem('tapvault_settings', JSON.stringify(this.settings));
-            }
-
-            applySettings() {
-                // Apply theme
-                if (!this.settings.darkMode) {
-                    document.body.dataset.theme = 'light';
-                    document.getElementById('themeToggle').textContent = '☀️';
-                    document.getElementById('darkModeToggle').classList.remove('active');
-                    document.getElementById('darkModeToggle').setAttribute('aria-checked', 'false');
-                } else {
-                    document.getElementById('darkModeToggle').setAttribute('aria-checked', 'true');
-                }
-                
-                // Apply default mode
-                if (this.settings.defaultMode === 'shake') {
-                    document.getElementById('defaultModeToggle').classList.add('active');
-                    document.getElementById('defaultModeToggle').setAttribute('aria-checked', 'true');
-                } else {
-                    document.getElementById('defaultModeToggle').setAttribute('aria-checked', 'false');
-                }
-                
-                // Apply default actions
-                document.getElementById('defaultActions').value = this.settings.defaultActions;
-                document.getElementById('actionSlider').value = this.settings.defaultActions;
-                document.getElementById('actionValue').textContent = this.settings.defaultActions;
-                
-                // Apply haptic setting
-                if (!this.settings.hapticFeedback) {
-                    document.getElementById('hapticToggle').classList.remove('active');
-                    document.getElementById('hapticToggle').setAttribute('aria-checked', 'false');
-                } else {
-                    document.getElementById('hapticToggle').setAttribute('aria-checked', 'true');
-                }
-
-                // Apply auto camera setting
-                if (!this.settings.autoCamera) {
-                    document.getElementById('autoCameraToggle').classList.remove('active');
-                    document.getElementById('autoCameraToggle').setAttribute('aria-checked', 'false');
-                } else {
-                    document.getElementById('autoCameraToggle').setAttribute('aria-checked', 'true');
-                }
-
-                // Apply animations setting
-                if (!this.settings.animations) {
-                    document.getElementById('animationsToggle').classList.remove('active');
-                    document.getElementById('animationsToggle').setAttribute('aria-checked', 'false');
-                    document.body.classList.add('no-animations');
-                } else {
-                    document.getElementById('animationsToggle').setAttribute('aria-checked', 'true');
-                }
-                
-                // Display recent vaults
-                this.displayRecentVaults();
-            }
-
-            setupAccessibility() {
-                // Add keyboard navigation for nav items
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            this.navigateTo(item.dataset.screen);
-                        }
-                    });
-                });
-
-                // Add keyboard navigation for toggle switches
-                document.querySelectorAll('.toggle-switch').forEach(toggle => {
-                    toggle.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            toggle.click();
-                        }
-                    });
-                });
-
-                // Add keyboard navigation for quick actions
-                document.querySelectorAll('.quick-action').forEach(action => {
-                    action.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            action.click();
-                        }
-                    });
-                });
+                console.log('TapVault App initialized');
             }
 
             bindEvents() {
-                // Theme toggle
-                document.getElementById('themeToggle').addEventListener('click', () => this.toggleTheme());
-
                 // Navigation
                 document.querySelectorAll('.nav-item').forEach(item => {
-                    item.addEventListener('click', () => this.navigateTo(item.dataset.screen));
+                    item.addEventListener('click', (e) => {
+                        const screen = e.currentTarget.dataset.screen;
+                        this.showScreen(screen);
+                    });
                 });
 
                 // Quick actions
-                document.getElementById('createVaultButton').addEventListener('click', () => this.navigateTo('create'));
-                document.getElementById('openVaultButton').addEventListener('click', () => this.navigateTo('scanner'));
-                document.getElementById('scan
+                const createBtn = document.getElementById('createVaultButton');
+                if (createBtn) {
+                    createBtn.addEventListener('click', () => this.showScreen('create'));
+                }
+
+                const openBtn = document.getElementById('openVaultButton');
+                if (openBtn) {
+                    openBtn.addEventListener('click', () => this.showScanner());
+                }
+
+                // Theme toggle
+                const themeBtn = document.getElementById('themeToggle');
+                if (themeBtn) {
+                    themeBtn.addEventListener('click', () => this.toggleTheme());
+                }
+
+                // Create vault form
+                const modeToggle = document.getElementById('modeToggle');
+                if (modeToggle) {
+                    modeToggle.addEventListener('click', () => this.toggleMode());
+                }
+
+                const slider = document.getElementById('actionSlider');
+                if (slider) {
+                    slider.addEventListener('input', (e) => this.updateSliderValue(e));
+                }
+
+                const createButton = document.getElementById('createButton');
+                if (createButton) {
+                    createButton.addEventListener('click', () => this.createVault());
+                }
+
+                // Unlock button
+                const unlockBtn = document.getElementById('unlockButton');
+                if (unlockBtn) {
+                    unlockBtn.addEventListener('click', () => this.handleUnlockAction());
+                }
+
+                // Copy button
+                const copyBtn = document.getElementById('copyMessageButton');
+                if (copyBtn) {
+                    copyBtn.addEventListener('click', () => this.copyDecryptedMessage());
+                }
+
+                // Modal close
+                const modalCancel = document.getElementById('modalCancel');
+                if (modalCancel) {
+                    modalCancel.addEventListener('click', () => this.closeModal());
+                }
+
+                // Settings toggles
+                const darkModeToggle = document.getElementById('darkModeToggle');
+                if (darkModeToggle) {
+                    darkModeToggle.addEventListener('click', () => this.toggleTheme());
+                }
+
+                console.log('Event handlers bound');
+            }
+
+            showScreen(screenName) {
+                // Hide all screens
+                document.querySelectorAll('.screen').forEach(screen => {
+                    screen.classList.remove('active');
+                });
+
+                // Show target screen
+                const targetScreen = document.getElementById(screenName + 'Screen');
+                if (targetScreen) {
+                    targetScreen.classList.add('active');
+                }
+
+                // Update navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                const activeNavItem = document.querySelector(`[data-screen="${screenName}"]`);
+                if (activeNavItem) {
+                    activeNavItem.classList.add('active');
+                }
+
+                this.currentScreen = screenName;
+                console.log('Switched to screen:', screenName);
+            }
+
+            showScanner() {
+                this.showModal('QR-Scanner', 'QR-Code Scanner wird in einem zukünftigen Update verfügbar sein.');
+            }
+
+            toggleMode() {
+                const toggle = document.getElementById('modeToggle');
+                const label = document.getElementById('modeLabel');
+                const actionLabel = document.getElementById('actionLabel');
+                
+                if (toggle && label && actionLabel) {
+                    toggle.classList.toggle('active');
+                    
+                    if (toggle.classList.contains('active')) {
+                        label.textContent = 'Shake-Modus';
+                        actionLabel.textContent = 'Shakes erforderlich';
+                    } else {
+                        label.textContent = 'Tap-Modus';
+                        actionLabel.textContent = 'Taps erforderlich';
+                    }
+                }
+            }
+
+            updateSliderValue(event) {
+                const value = event.target.value;
+                const valueDisplay = document.getElementById('actionValue');
+                if (valueDisplay) {
+                    valueDisplay.textContent = value;
+                }
+            }
+
+            async createVault() {
+                const messageInput = document.getElementById('messageInput');
+                const titleInput = document.getElementById('titleInput');
+                const modeToggle = document.getElementById('modeToggle');
+                const actionSlider = document.getElementById('actionSlider');
+
+                if (!messageInput || !actionSlider) {
+                    this.showModal('Fehler', 'Formular-Elemente nicht gefunden.');
+                    return;
+                }
+
+                const message = messageInput.value.trim();
+                const title = titleInput ? titleInput.value.trim() || 'Unbenannter Tresor' : 'Unbenannter Tresor';
+                const isShakeMode = modeToggle ? modeToggle.classList.contains('active') : false;
+                const requiredActions = parseInt(actionSlider.value);
+
+                if (!message) {
+                    this.showModal('Fehler', 'Bitte geben Sie eine Nachricht ein.');
+                    return;
+                }
+
+                try {
+                    // Create vault data
+                    const vaultData = {
+                        id: this.generateId(),
+                        title,
+                        mode: isShakeMode ? 'shake' : 'tap',
+                        requiredActions,
+                        created: new Date().toISOString()
+                    };
+
+                    // Encrypt the message
+                    const encryptedData = await this.encryptMessage(message, requiredActions);
+                    vaultData.encryptedData = encryptedData;
+
+                    // Clear form
+                    messageInput.value = '';
+                    if (titleInput) titleInput.value = '';
+
+                    this.showModal('Erfolg', `Tresor "${title}" wurde erfolgreich erstellt!`);
+                    this.showScreen('home');
+
+                } catch (error) {
+                    console.error('Vault creation failed:', error);
+                    this.showModal('Fehler', 'Tresor konnte nicht erstellt werden: ' + error.message);
+                }
+            }
+
+            openVault(vaultData) {
+                this.unlockState = {
+                    currentActions: 0,
+                    requiredActions: vaultData.requiredActions,
+                    mode: vaultData.mode,
+                    vaultData: vaultData,
+                    isShakeMode: vaultData.mode === 'shake',
+                    decryptedMessage: null
+                };
+
+                // Update UI
+                const unlockTitle = document.getElementById('unlockTitle');
+                const requiredActions = document.getElementById('requiredActions');
+                const unlockMode = document.getElementById('unlockMode');
+                const progressSubtitle = document.getElementById('progressSubtitle');
+                const unlockButtonText = document.getElementById('unlockButtonText');
+
+                if (unlockTitle) unlockTitle.textContent = vaultData.title;
+                if (requiredActions) requiredActions.textContent = vaultData.requiredActions;
+                if (unlockMode) unlockMode.textContent = vaultData.mode === 'shake' ? 'Shakes' : 'Taps';
+                if (progressSubtitle) progressSubtitle.textContent = `${vaultData.mode === 'shake' ? 'Shakes' : 'Taps'} ausgeführt`;
+                if (unlockButtonText) unlockButtonText.textContent = vaultData.mode === 'shake' ? 'SHAKE' : 'TAP';
+
+                // Style unlock button
+                const unlockButton = document.getElementById('unlockButton');
+                if (unlockButton) {
+                    if (vaultData.mode === 'shake') {
+                        unlockButton.classList.add('shake-mode');
+                    } else {
+                        unlockButton.classList.remove('shake-mode');
+                    }
+                }
+
+                // Reset progress
+                this.updateProgress(0, vaultData.requiredActions);
+                
+                // Hide decrypted message
+                const decryptedMessage = document.getElementById('decryptedMessage');
+                if (decryptedMessage) {
+                    decryptedMessage.classList.add('hidden');
+                }
+                if (unlockButton) {
+                    unlockButton.style.display = 'block';
+                }
+
+                this.showScreen('unlock');
+            }
+
+            handleUnlockAction() {
+                if (this.unlockState.decryptedMessage) return;
+
+                this.unlockState.currentActions++;
+                this.hapticFeedback();
+
+                this.updateProgress(this.unlockState.currentActions, this.unlockState.requiredActions);
+
+                if (this.unlockState.currentActions >= this.unlockState.requiredActions) {
+                    this.completeUnlock();
+                }
+            }
+
+            async completeUnlock() {
+                try {
+                    const decryptedMessage = await this.decryptMessage(
+                        this.unlockState.vaultData.encryptedData,
+                        this.unlockState.requiredActions
+                    );
+
+                    this.unlockState.decryptedMessage = decryptedMessage;
+                    
+                    const decryptedText = document.getElementById('decryptedText');
+                    const unlockButton = document.getElementById('unlockButton');
+                    const decryptedMessageDiv = document.getElementById('decryptedMessage');
+
+                    if (decryptedText) decryptedText.textContent = decryptedMessage;
+                    if (unlockButton) unlockButton.style.display = 'none';
+                    if (decryptedMessageDiv) decryptedMessageDiv.classList.remove('hidden');
+                    
+                    this.hapticFeedback();
+                    
+                } catch (error) {
+                    console.error('Decryption failed:', error);
+                    this.showModal('Fehler', 'Entschlüsselung fehlgeschlagen: ' + error.message);
+                }
+            }
+
+            updateProgress(current, total) {
+                const progress = (current / total) * 100;
+                const circumference = 2 * Math.PI * 54;
+                const offset = circumference - (progress / 100) * circumference;
+                
+                const progressCircle = document.getElementById('progressCircle');
+                const progressText = document.getElementById('progressText');
+
+                if (progressCircle) {
+                    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+                    progressCircle.style.strokeDashoffset = offset;
+                }
+
+                if (progressText) {
+                    progressText.textContent = `${current} / ${total}`;
+                }
+            }
+
+            copyDecryptedMessage() {
+                if (this.unlockState.decryptedMessage) {
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(this.unlockState.decryptedMessage).then(() => {
+                            this.showModal('Erfolg', 'Nachricht wurde kopiert!');
+                            this.hapticFeedback();
+                        }).catch(() => {
+                            this.showModal('Fehler', 'Nachricht konnte nicht kopiert werden.');
+                        });
+                    } else {
+                        // Fallback for older browsers
+                        this.showModal('Info', 'Text: ' + this.unlockState.decryptedMessage);
+                    }
+                }
+            }
+
+            // Encryption/Decryption
+            async encryptMessage(message, actions) {
+                const key = await this.deriveKey(actions.toString());
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const encoded = new TextEncoder().encode(message);
+                
+                const encrypted = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    encoded
+                );
+                
+                return {
+                    data: Array.from(new Uint8Array(encrypted)),
+                    iv: Array.from(iv)
+                };
+            }
+
+            async decryptMessage(encryptedData, actions) {
+                const key = await this.deriveKey(actions.toString());
+                const iv = new Uint8Array(encryptedData.iv);
+                const data = new Uint8Array(encryptedData.data);
+                
+                const decrypted = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    data
+                );
+                
+                return new TextDecoder().decode(decrypted);
+            }
+
+            async deriveKey(password) {
+                const encoder = new TextEncoder();
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(password),
+                    { name: 'PBKDF2' },
+                    false,
+                    ['deriveKey']
+                );
+                
+                const salt = encoder.encode('tapvault-salt-' + password);
+                
+                return crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt: salt,
+                        iterations: 100000,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['encrypt', 'decrypt']
+                );
+            }
+
+            toggleTheme() {
+                const body = document.body;
+                const themeToggle = document.getElementById('themeToggle');
+                
+                if (body.dataset.theme === 'light') {
+                    body.dataset.theme = 'dark';
+                    if (themeToggle) themeToggle.textContent = '🌙';
+                } else {
+                    body.dataset.theme = 'light';
+                    if (themeToggle) themeToggle.textContent = '☀️';
+                }
+            }
+
+            hapticFeedback() {
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+            }
+
+            setupShakeDetection() {
+                if (window.DeviceMotionEvent) {
+                    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                        // iOS 13+ requires permission
+                        DeviceMotionEvent.requestPermission()
+                            .then(response => {
+                                if (response == 'granted') {
+                                    window.addEventListener('devicemotion', (e) => this.handleDeviceMotion(e));
+                                }
+                            })
+                            .catch(console.error);
+                    } else {
+                        // Non-iOS devices
+                        window.addEventListener('devicemotion', (e) => this.handleDeviceMotion(e));
+                    }
+                }
+            }
+
+            handleDeviceMotion(event) {
+                if (!this.unlockState.isShakeMode || this.currentScreen !== 'unlock') return;
+
+                const acceleration = event.accelerationIncludingGravity;
+                const x = acceleration.x;
+                const y = acceleration.y;
+                const z = acceleration.z;
+
+                if (this.lastX !== null) {
+                    const deltaX = Math.abs(x - this.lastX);
+                    const deltaY = Math.abs(y - this.lastY);
+                    const deltaZ = Math.abs(z - this.lastZ);
+
+                    if (deltaX + deltaY + deltaZ > this.shakeThreshold) {
+                        const now = Date.now();
+                        if (now - this.lastShakeTime > 100) {
+                            this.handleUnlockAction();
+                            this.lastShakeTime = now;
+                        }
+                    }
+                }
+
+                this.lastX = x;
+                this.lastY = y;
+                this.lastZ = z;
+            }
+
+            showModal(title, text, onConfirm = null) {
+                const modal = document.getElementById('modal');
+                const modalTitle = document.getElementById('modalTitle');
+                const modalText = document.getElementById('modalText');
+                const confirmBtn = document.getElementById('modalConfirm');
+                
+                if (modalTitle) modalTitle.textContent = title;
+                if (modalText) modalText.textContent = text;
+                
+                if (confirmBtn) {
+                    if (onConfirm) {
+                        confirmBtn.style.display = 'block';
+                        confirmBtn.onclick = () => {
+                            this.closeModal();
+                            onConfirm();
+                        };
+                    } else {
+                        confirmBtn.style.display = 'none';
+                    }
+                }
+                
+                if (modal) modal.classList.add('active');
+            }
+
+            closeModal() {
+                const modal = document.getElementById('modal');
+                if (modal) modal.classList.remove('active');
+            }
+
+            generateId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            }
+        }
+
+        // Initialize app when DOM is loaded
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new TapVaultApp();
+            console.log('App initialized:', app);
+        });
+
+        // Global error handler
+        window.addEventListener('error', (e) => {
+            console.error('Global error:', e.error);
+            alert('JavaScript Error: ' + e.message);
+        });
+    </script>
+</body>
+</html>
