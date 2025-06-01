@@ -1723,27 +1723,60 @@
             }
 
             async createVault() {
-                const messageInput = document.getElementById('messageInput');
-                const titleInput = document.getElementById('titleInput');
-                const modeToggle = document.getElementById('modeToggle');
-                const actionSlider = document.getElementById('actionSlider');
+    const messageInput = document.getElementById('messageInput');
+    const titleInput = document.getElementById('titleInput');
+    const modeToggle = document.getElementById('modeToggle');
+    const actionSlider = document.getElementById('actionSlider');
 
-                if (!messageInput || !actionSlider) {
-                    this.showModal('Fehler', 'Formular-Elemente nicht gefunden.');
-                    return;
-                }
+    if (!messageInput || !actionSlider) {
+        this.showModal('Fehler', 'Formular-Elemente nicht gefunden.');
+        return;
+    }
 
-                const message = messageInput.value.trim();
-                const title = titleInput ? titleInput.value.trim() || 'Unbenannter Tresor' : 'Unbenannter Tresor';
-                const isShakeMode = modeToggle ? modeToggle.classList.contains('active') : false;
-                const requiredActions = parseInt(actionSlider.value);
+    const message = messageInput.value.trim();
+    const title = titleInput ? titleInput.value.trim() || 'Unbenannter Tresor' : 'Unbenannter Tresor';
+    const isShakeMode = modeToggle ? modeToggle.classList.contains('active') : false;
+    const requiredActions = parseInt(actionSlider.value);
 
-                if (!message) {
-                    this.showModal('Fehler', 'Bitte geben Sie eine Nachricht ein.');
-                    return;
-                }
+    if (!message) {
+        this.showModal('Fehler', 'Bitte geben Sie eine Nachricht ein.');
+        return;
+    }
 
-                try {
+    try {
+        // Create vault data
+        const vaultData = {
+            id: this.generateId(),
+            title,
+            mode: isShakeMode ? 'shake' : 'tap',
+            requiredActions,
+            created: new Date().toISOString()
+        };
+
+        // Encrypt the message
+        const encryptedData = await this.encryptMessage(message, requiredActions);
+        vaultData.encryptedData = encryptedData;
+
+        // WICHTIG: Speichere den Tresor
+        this.saveVault(vaultData);
+
+        // Clear form
+        messageInput.value = '';
+        if (titleInput) titleInput.value = '';
+
+        // WICHTIG: Aktualisiere die Listen
+        this.updateRecentVaults();
+        this.updateVaultsList();
+
+        this.showModal('Erfolg', `Tresor "${title}" wurde erfolgreich erstellt!`, () => {
+            this.showScreen('vaults'); // Zeige Tresore nach Modal
+        });
+
+    } catch (error) {
+        console.error('Vault creation failed:', error);
+        this.showModal('Fehler', 'Tresor konnte nicht erstellt werden: ' + error.message);
+    }
+            }
                     // Create vault data
                     const vaultData = {
                         id: this.generateId(),
