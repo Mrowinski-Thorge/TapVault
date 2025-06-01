@@ -251,6 +251,16 @@
             box-shadow: 0 2px 6px rgba(0, 122, 255, 0.3);
         }
 
+        .slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0, 122, 255, 0.3);
+        }
+
         .slider-value {
             text-align: center;
             font-size: 28px;
@@ -278,6 +288,12 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .btn-primary {
@@ -286,7 +302,7 @@
             box-shadow: var(--shadow);
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-1px);
             box-shadow: 0 6px 25px rgba(0, 122, 255, 0.3);
         }
@@ -297,13 +313,38 @@
             border: 1px solid var(--border-color);
         }
 
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--bg-tertiary);
+            transform: translateY(-1px);
+        }
+
         .btn-success {
             background: var(--success-color);
             color: white;
         }
 
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 25px rgba(52, 199, 89, 0.3);
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 25px rgba(255, 59, 48, 0.3);
+        }
+
         .btn-full {
             width: 100%;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
         }
 
         /* Tap Button */
@@ -331,6 +372,12 @@
             transform: scale(0.95);
         }
 
+        .tap-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
         .tap-button.shake-mode {
             background: linear-gradient(135deg, var(--warning-color), var(--accent-secondary));
             box-shadow: 0 8px 30px rgba(255, 149, 0, 0.3);
@@ -338,6 +385,11 @@
 
         .tap-button.pulse {
             animation: pulse 0.3s ease-out;
+        }
+
+        .tap-button.success {
+            background: linear-gradient(135deg, var(--success-color), var(--accent-secondary));
+            box-shadow: 0 8px 30px rgba(52, 199, 89, 0.3);
         }
 
         @keyframes pulse {
@@ -375,7 +427,7 @@
         .progress-ring .progress {
             stroke: var(--accent-primary);
             stroke-linecap: round;
-            transition: stroke-dasharray 0.3s ease;
+            transition: stroke-dashoffset 0.3s ease;
         }
 
         .progress-text {
@@ -388,6 +440,16 @@
             color: var(--text-secondary);
             font-size: 14px;
             margin-top: 4px;
+        }
+
+        .progress-percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent-primary);
         }
 
         /* Vault List */
@@ -411,6 +473,7 @@
         .vault-item:hover {
             background: var(--bg-secondary);
             transform: translateY(-1px);
+            box-shadow: var(--shadow-card);
         }
 
         .vault-icon {
@@ -424,15 +487,20 @@
             color: white;
             font-size: 20px;
             margin-right: 16px;
+            flex-shrink: 0;
         }
 
         .vault-info {
             flex: 1;
+            min-width: 0;
         }
 
         .vault-title {
             font-weight: 600;
             margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .vault-meta {
@@ -443,6 +511,7 @@
         .vault-actions {
             display: flex;
             gap: 8px;
+            flex-shrink: 0;
         }
 
         /* Bottom Navigation */
@@ -458,6 +527,8 @@
             justify-content: space-around;
             align-items: center;
             z-index: 1000;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
 
         .nav-item {
@@ -470,11 +541,17 @@
             cursor: pointer;
             transition: all 0.2s;
             color: var(--text-secondary);
+            min-width: 60px;
         }
 
         .nav-item.active {
             color: var(--accent-primary);
             background: rgba(0, 122, 255, 0.1);
+        }
+
+        .nav-item:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
         }
 
         .nav-icon {
@@ -502,11 +579,14 @@
             border: 1px solid var(--border-color);
             cursor: pointer;
             transition: all 0.2s;
+            text-decoration: none;
+            color: inherit;
         }
 
         .quick-action:hover {
             background: var(--bg-secondary);
             transform: translateY(-2px);
+            box-shadow: var(--shadow-card);
         }
 
         .quick-action-icon {
@@ -538,6 +618,7 @@
             position: relative;
             overflow: hidden;
             border-radius: var(--radius);
+            margin-bottom: 20px;
         }
 
         .qr-scanner-line {
@@ -548,11 +629,47 @@
             height: 2px;
             background: var(--accent-primary);
             animation: scan 2s linear infinite;
+            opacity: 0.8;
         }
 
         @keyframes scan {
             0% { transform: translateY(0); }
             100% { transform: translateY(300px); }
+        }
+
+        .qr-scanner-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border: 2px solid var(--accent-primary);
+            border-radius: 12px;
+            pointer-events: none;
+        }
+
+        .qr-scanner-overlay::before,
+        .qr-scanner-overlay::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--accent-primary);
+        }
+
+        .qr-scanner-overlay::before {
+            top: -3px;
+            left: -3px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .qr-scanner-overlay::after {
+            bottom: -3px;
+            right: -3px;
+            border-left: none;
+            border-top: none;
         }
 
         /* QR Code Display */
@@ -567,6 +684,7 @@
             padding: 20px;
             border-radius: var(--radius);
             display: inline-block;
+            box-shadow: var(--shadow-card);
         }
 
         /* Security Badge */
@@ -583,6 +701,22 @@
             margin: 10px 0;
         }
 
+        .security-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: rgba(52, 199, 89, 0.1);
+            border: 1px solid rgba(52, 199, 89, 0.2);
+            border-radius: var(--radius);
+            margin: 16px 0;
+        }
+
+        .security-info-icon {
+            color: var(--success-color);
+            font-size: 16px;
+        }
+
         /* Modal */
         .modal {
             position: fixed;
@@ -590,12 +724,13 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
             align-items: center;
             justify-content: center;
             z-index: 2000;
-            display: none;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
         }
 
         .modal.active {
@@ -609,22 +744,38 @@
             max-width: 400px;
             width: 90%;
             box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .modal-title {
             font-size: 20px;
             font-weight: 600;
             margin-bottom: 16px;
+            color: var(--text-primary);
         }
 
         .modal-text {
             color: var(--text-secondary);
             margin-bottom: 24px;
+            line-height: 1.5;
         }
 
         .modal-actions {
             display: flex;
             gap: 12px;
+            justify-content: flex-end;
         }
 
         /* Empty State */
@@ -638,6 +789,18 @@
             font-size: 48px;
             margin-bottom: 16px;
             opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .empty-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
         }
 
         /* Settings */
@@ -661,6 +824,11 @@
             border-radius: var(--radius);
             border: 1px solid var(--border-color);
             margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .settings-item:hover {
+            background: var(--bg-secondary);
         }
 
         .settings-info {
@@ -670,6 +838,7 @@
         .settings-label {
             font-weight: 500;
             margin-bottom: 4px;
+            color: var(--text-primary);
         }
 
         .settings-description {
@@ -677,9 +846,39 @@
             font-size: 14px;
         }
 
+        .settings-value {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-left: 16px;
+        }
+
+        /* Loading States */
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--bg-tertiary);
+            border-radius: 50%;
+            border-top-color: var(--accent-primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* Animations */
         .fade-in {
             animation: fadeIn 0.5s ease-in;
+        }
+
+        .slide-up {
+            animation: slideUp 0.3s ease-out;
         }
 
         .shake-animation {
@@ -691,13 +890,83 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
             75% { transform: translateX(5px); }
         }
 
+        /* Success/Error States */
+        .success-state {
+            background: var(--success-color);
+            color: white;
+            padding: 16px;
+            border-radius: var(--radius);
+            margin: 16px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .error-state {
+            background: var(--error-color);
+            color: white;
+            padding: 16px;
+            border-radius: var(--radius);
+            margin: 16px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: rgba(0, 122, 255, 0.1);
+            border: 1px solid rgba(0, 122, 255, 0.2);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .info-card-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--accent-primary);
+        }
+
+        .info-card-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
         /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 15px 0 15px;
+            }
+            
+            .screen {
+                padding: 15px;
+            }
+
+            .modal-content {
+                margin: 20px;
+                width: calc(100% - 40px);
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .modal-actions .btn {
+                width: 100%;
+            }
+        }
+
         @media (max-width: 480px) {
             .tap-button {
                 width: 150px;
@@ -707,23 +976,128 @@
             
             .quick-actions {
                 grid-template-columns: 1fr;
+                gap: 12px;
             }
             
-            .header {
-                padding: 15px 15px 0 15px;
+            .progress-ring {
+                width: 100px;
+                height: 100px;
             }
-            
-            .screen {
-                padding: 15px;
+
+            .progress-ring svg {
+                width: 100px;
+                height: 100px;
+            }
+
+            .bottom-nav {
+                padding: 0 8px;
+            }
+
+            .nav-item {
+                padding: 8px 12px;
+                min-width: 50px;
+            }
+
+            .nav-icon {
+                font-size: 18px;
+            }
+
+            .nav-label {
+                font-size: 11px;
             }
         }
 
         /* Utility Classes */
         .hidden { display: none !important; }
+        .invisible { visibility: hidden !important; }
         .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
         .mb-0 { margin-bottom: 0 !important; }
+        .mt-1 { margin-top: 8px; }
         .mt-2 { margin-top: 16px; }
+        .mb-1 { margin-bottom: 8px; }
         .mb-2 { margin-bottom: 16px; }
+        .p-0 { padding: 0 !important; }
+        .flex { display: flex; }
+        .flex-column { flex-direction: column; }
+        .justify-center { justify-content: center; }
+        .align-center { align-items: center; }
+        .gap-1 { gap: 8px; }
+        .gap-2 { gap: 16px; }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+
+        /* Dark mode specific adjustments */
+        [data-theme="dark"] .qr-scanner-overlay {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.3);
+        }
+
+        [data-theme="light"] .qr-scanner-overlay {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.2);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Focus styles for accessibility */
+        .btn:focus,
+        .icon-button:focus,
+        .nav-item:focus,
+        .quick-action:focus,
+        .vault-item:focus {
+            outline: 2px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --border-color: #666666;
+                --text-secondary: #cccccc;
+            }
+
+            [data-theme="light"] {
+                --border-color: #333333;
+                --text-secondary: #333333;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .qr-scanner-line {
+                animation: none;
+            }
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -733,8 +1107,8 @@
             <div class="header-content">
                 <div class="logo">TapVault</div>
                 <div class="header-actions">
-                    <button class="icon-button" id="themeToggle">🌙</button>
-                    <button class="icon-button" id="scanButton">📷</button>
+                    <button class="icon-button" id="themeToggle" title="Theme wechseln">🌙</button>
+                    <button class="icon-button" id="scanButton" title="QR-Scanner öffnen">📷</button>
                 </div>
             </div>
         </header>
@@ -742,12 +1116,12 @@
         <!-- Home Screen -->
         <div id="homeScreen" class="screen active">
             <div class="quick-actions">
-                <div class="quick-action" id="createVaultButton">
+                <div class="quick-action" id="createVaultButton" tabindex="0">
                     <div class="quick-action-icon">🔒</div>
                     <div class="quick-action-title">Erstellen</div>
                     <div class="quick-action-subtitle">Neuen Tresor erstellen</div>
                 </div>
-                <div class="quick-action" id="openVaultButton">
+                <div class="quick-action" id="openVaultButton" tabindex="0">
                     <div class="quick-action-icon">📱</div>
                     <div class="quick-action-title">Öffnen</div>
                     <div class="quick-action-subtitle">Link oder QR-Code</div>
@@ -760,11 +1134,15 @@
                         <div class="card-title">Zuletzt erstellt</div>
                         <div class="card-subtitle">Schnellzugriff auf Ihre Tresore</div>
                     </div>
+                    <button class="btn btn-small btn-secondary" id="clearHistoryButton">
+                        🗑️ Löschen
+                    </button>
                 </div>
                 <div id="recentVaults" class="vault-list">
                     <div class="empty-state">
                         <div class="empty-icon">🗃️</div>
-                        <div>Noch keine Tresore erstellt</div>
+                        <div class="empty-title">Noch keine Tresore erstellt</div>
+                        <div class="empty-subtitle">Erstellen Sie Ihren ersten sicheren Tresor</div>
                     </div>
                 </div>
             </div>
@@ -777,6 +1155,12 @@
                     Ihre Daten werden mit militärischer Verschlüsselung geschützt. 
                     Alle Operationen erfolgen lokal in Ihrem Browser - keine Server erforderlich.
                 </div>
+                <div class="security-info">
+                    <div class="security-info-icon">🛡️</div>
+                    <div>
+                        <strong>100% Privat:</strong> Keine Datenübertragung an Server
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -786,27 +1170,40 @@
                 <div class="card-title mb-2">Neuen Tresor erstellen</div>
                 
                 <div class="form-group">
-                    <label class="form-label">Nachricht</label>
-                    <textarea id="messageInput" class="form-input form-textarea" placeholder="Geben Sie Ihre geheime Nachricht ein..."></textarea>
+                    <label class="form-label" for="messageInput">Nachricht *</label>
+                    <textarea 
+                        id="messageInput" 
+                        class="form-input form-textarea" 
+                        placeholder="Geben Sie Ihre geheime Nachricht ein..."
+                        required
+                        maxlength="10000"
+                    ></textarea>
+                    <div id="messageCounter" class="card-subtitle mt-1">0 / 10000 Zeichen</div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Titel (optional)</label>
-                    <input type="text" id="titleInput" class="form-input" placeholder="Tresor-Titel">
+                    <label class="form-label" for="titleInput">Titel (optional)</label>
+                    <input 
+                        type="text" 
+                        id="titleInput" 
+                        class="form-input" 
+                        placeholder="Tresor-Titel"
+                        maxlength="100"
+                    >
                 </div>
 
                 <div class="form-group">
                     <div class="toggle-container">
                         <div>
-                            <div class="form-label mb-0">Modus</div>
+                            <div class="form-label mb-0">Entsperr-Modus</div>
                             <div class="card-subtitle">Tap oder Shake zum Entsperren</div>
                         </div>
-                        <div class="toggle-switch" id="modeToggle">
+                        <div class="toggle-switch" id="modeToggle" tabindex="0" role="switch" aria-checked="false">
                             <div class="toggle-slider"></div>
                         </div>
                     </div>
                     <div class="text-center mt-2">
-                        <span id="modeLabel">Tap-Modus</span>
+                        <span id="modeLabel">👆 Tap-Modus</span>
                     </div>
                 </div>
 
@@ -815,7 +1212,27 @@
                     <div class="slider-container">
                         <div class="slider-value" id="actionValue">50</div>
                         <div class="slider-label" id="actionLabel">Taps erforderlich</div>
-                        <input type="range" id="actionSlider" class="slider" min="1" max="500" value="50">
+                        <input 
+                            type="range" 
+                            id="actionSlider" 
+                            class="slider" 
+                            min="1" 
+                            max="1000" 
+                            value="50"
+                            step="1"
+                        >
+                        <div class="flex justify-center gap-2 mt-2">
+                            <button class="btn btn-small btn-secondary" onclick="document.getElementById('actionSlider').value = 10; document.getElementById('actionValue').textContent = 10;">Schnell</button>
+                            <button class="btn btn-small btn-secondary" onclick="document.getElementById('actionSlider').value = 50; document.getElementById('actionValue').textContent = 50;">Normal</button>
+                            <button class="btn btn-small btn-secondary" onclick="document.getElementById('actionSlider').value = 100; document.getElementById('actionValue').textContent = 100;">Sicher</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-title">💡 Sicherheitstipp</div>
+                    <div class="info-card-text">
+                        Mehr Aktionen = höhere Sicherheit. Empfohlen sind 50-100 Aktionen für optimale Balance zwischen Sicherheit und Benutzerfreundlichkeit.
                     </div>
                 </div>
 
@@ -831,54 +1248,90 @@
                 <div class="card-title mb-2">QR-Code Scanner</div>
                 <div class="card-subtitle">Scannen Sie einen TapVault QR-Code oder geben Sie einen Link ein</div>
                 
-                <div class="qr-overlay">
+                <div class="qr-overlay" id="cameraContainer">
                     <video id="video" autoplay muted playsinline></video>
                     <div class="qr-scanner-line"></div>
+                    <div class="qr-scanner-overlay"></div>
                 </div>
                 
+                <div class="text-center mb-2">
+                    <button id="toggleCameraButton" class="btn btn-secondary">
+                        📷 Kamera aktivieren
+                    </button>
+                </div>
+
                 <div class="form-group">
-                    <label class="form-label">Oder Link eingeben</label>
-                    <input type="text" id="linkInput" class="form-input" placeholder="tapvault://...">
+                    <label class="form-label" for="linkInput">Oder Link eingeben</label>
+                    <input 
+                        type="text" 
+                        id="linkInput" 
+                        class="form-input" 
+                        placeholder="tapvault://..."
+                        autocomplete="off"
+                    >
+                    <div class="card-subtitle mt-1">
+                        Fügen Sie hier einen TapVault-Link ein
+                    </div>
                 </div>
                 
                 <button id="processLinkButton" class="btn btn-primary btn-full">
                     🔗 Link verarbeiten
                 </button>
+
+                <div class="info-card">
+                    <div class="info-card-title">📱 Scanner-Hilfe</div>
+                    <div class="info-card-text">
+                        • Halten Sie das Gerät ruhig<br>
+                        • Sorgen Sie für gute Beleuchtung<br>
+                        • Zentrieren Sie den QR-Code im Rahmen
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Vault Result Screen -->
         <div id="resultScreen" class="screen">
             <div class="card text-center">
-                <div class="card-title mb-2">✅ Tresor erstellt!</div>
-                <div class="card-subtitle">Teilen Sie den QR-Code oder Link sicher</div>
+                <div class="card-title mb-2">✅ Tresor erfolgreich erstellt!</div>
+                <div class="card-subtitle">Teilen Sie den QR-Code oder Link sicher mit dem Empfänger</div>
             </div>
 
             <div class="card">
                 <div class="qr-container">
                     <div id="qrcode"></div>
-                    <button id="copyLinkButton" class="btn btn-secondary btn-full mb-2">
-                        📋 Link kopieren
-                    </button>
-                    <button id="shareButton" class="btn btn-secondary btn-full">
-                        📤 Teilen
+                    <div class="flex gap-2 mb-2">
+                        <button id="copyLinkButton" class="btn btn-secondary btn-full">
+                            📋 Link kopieren
+                        </button>
+                        <button id="shareButton" class="btn btn-secondary btn-full">
+                            📤 Teilen
+                        </button>
+                    </div>
+                    <button id="downloadQRButton" class="btn btn-secondary btn-full">
+                        💾 QR-Code herunterladen
                     </button>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-title">🔒 Sicherheitshinweise</div>
+                <div class="card-title">🔒 Wichtige Sicherheitshinweise</div>
                 <div class="card-subtitle">
                     • Der Link enthält alle verschlüsselten Daten<br>
                     • Teilen Sie ihn nur über sichere Kanäle<br>
-                    • Der Tresor wird nach dem Entsperren gelöscht<br>
-                    • Keine Server - alles läuft lokal in Ihrem Browser
+                    • Der Tresor wird nach dem Entsperren automatisch gelöscht<br>
+                    • Bewahren Sie eine Kopie auf, falls nötig<br>
+                    • Keine Server beteiligt - alles läuft lokal
                 </div>
             </div>
 
-            <button id="backToHomeButton" class="btn btn-primary btn-full">
-                🏠 Zurück zur Startseite
-            </button>
+            <div class="flex gap-2">
+                <button id="createAnotherButton" class="btn btn-secondary btn-full">
+                    ➕ Neuer Tresor
+                </button>
+                <button id="backToHomeButton" class="btn btn-primary btn-full">
+                    🏠 Zur Startseite
+                </button>
+            </div>
         </div>
 
         <!-- Unlock Screen -->
@@ -895,1511 +1348,388 @@
                     <svg width="120" height="120">
                         <circle class="background" cx="60" cy="60" r="54"></circle>
                         <circle class="progress" cx="60" cy="60" r="54" 
-                                stroke-dasharray="0 339.292" id="progressCircle"></circle>
+                                stroke-dasharray="339.292" 
+                                stroke-dashoffset="339.292" 
+                                id="progressCircle"></circle>
                     </svg>
+                    <div class="progress-percentage" id="progressPercentage">0%</div>
                 </div>
                 <div class="progress-text" id="progressText">0 / 50</div>
                 <div class="progress-subtitle" id="progressSubtitle">Taps ausgeführt</div>
             </div>
 
-            <button id="unlockButton" class="tap-button">
+            <button id="unlockButton" class="tap-button" tabindex="0">
                 <span id="unlockButtonText">TAP</span>
             </button>
 
-            <div id="decryptedMessage" class="card hidden">
-                <div class="card-title text-center">🎉 Entschlüsselt!</div>
-                <div id="decryptedText" class="text-center mt-2"></div>
-                <button class="btn btn-success btn-full mt-2" id="copyMessageButton">
-                    📋 Nachricht kopieren
+            <div class="text-center mb-2">
+                <button id="resetUnlockButton" class="btn btn-secondary btn-small">
+                    🔄 Zurücksetzen
                 </button>
-                <button class="btn btn-secondary btn-full mt-2" id="newUnlockButton">
+            </div>
+
+            <div id="decryptedMessage" class="card hidden">
+                <div class="card-title text-center mb-2">🎉 Tresor entsperrt!</div>
+                <div class="card" style="background: var(--bg-secondary); border: 2px solid var(--success-color);">
+                    <div id="decryptedText" class="text-center" style="word-break: break-word; white-space: pre-wrap;"></div>
+                </div>
+                <div class="flex gap-2 mt-2">
+                    <button class="btn btn-success btn-full" id="copyMessageButton">
+                        📋 Kopieren
+                    </button>
+                    <button class="btn btn-secondary btn-full" id="downloadMessageButton">
+                        💾 Speichern
+                    </button>
+                </div>
+                <button class="btn btn-primary btn-full mt-2" id="newUnlockButton">
                     🔄 Neuen Tresor öffnen
                 </button>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-title">🔓 Entsperr-Hinweis</div>
+                <div class="info-card-text" id="unlockHint">
+                    Tippen Sie auf den großen Button oder schütteln Sie Ihr Gerät
+                </div>
             </div>
         </div>
 
         <!-- Settings Screen -->
         <div id="settingsScreen" class="screen">
             <div class="settings-section">
-                <div class="settings-title">Allgemein</div>
+                <div class="settings-title">⚙️ Allgemeine Einstellungen</div>
                 <div class="settings-item">
                     <div class="settings-info">
-                        <div class="settings-label">Standard-Modus</div>
-                        <div class="settings-description">Tap oder Shake als Standard</div>
+                        <div class="settings-label">Standard-Entsperr-Modus</div>
+                        <div class="settings-description">Standardmäßig Tap oder Shake verwenden</div>
                     </div>
-                    <div class="toggle-switch" id="defaultModeToggle">
+                    <div class="toggle-switch" id="defaultModeToggle" tabindex="0" role="switch" aria-checked="false">
                         <div class="toggle-slider"></div>
                     </div>
                 </div>
                 <div class="settings-item">
                     <div class="settings-info">
-                        <div class="settings-label">Standard-Aktionen</div>
-                        <div class="settings-description">Anzahl erforderlicher Aktionen</div>
+                        <div class="settings-label">Standard-Aktionsanzahl</div>
+                        <div class="settings-description">Vordefinierte Anzahl erforderlicher Aktionen</div>
                     </div>
-                    <input type="number" id="defaultActions" class="form-input" value="50" min="1" max="1000" style="width: 80px;">
+                    <input 
+                        type="number" 
+                        id="defaultActions" 
+                        class="form-input" 
+                        value="50" 
+                        min="1" 
+                        max="1000" 
+                        style="width: 80px;"
+                    >
+                </div>
+                <div class="settings-item">
+                    <div class="settings-info">
+                        <div class="settings-label">Auto-Kamera</div>
+                        <div class="settings-description">Kamera automatisch beim Scanner starten</div>
+                    </div>
+                    <div class="toggle-switch active" id="autoCameraToggle" tabindex="0" role="switch" aria-checked="true">
+                        <div class="toggle-slider"></div>
+                    </div>
                 </div>
             </div>
 
             <div class="settings-section">
-                <div class="settings-title">Design</div>
+                <div class="settings-title">🎨 Design & Darstellung</div>
                 <div class="settings-item">
                     <div class="settings-info">
-                        <div class="settings-label">Dark Mode</div>
+                        <div class="settings-label">Dunkler Modus</div>
                         <div class="settings-description">Dunkles Farbschema verwenden</div>
                     </div>
-                    <div class="toggle-switch active" id="darkModeToggle">
+                    <div class="toggle-switch active" id="darkModeToggle" tabindex="0" role="switch" aria-checked="true">
                         <div class="toggle-slider"></div>
                     </div>
                 </div>
                 <div class="settings-item">
                     <div class="settings-info">
                         <div class="settings-label">Haptisches Feedback</div>
-                        <div class="settings-description">Vibrationen bei Interaktionen</div>
+                        <div class="settings-description">Vibrationen bei Interaktionen (falls unterstützt)</div>
                     </div>
-                    <div class="toggle-switch active" id="hapticToggle">
+                    <div class="toggle-switch active" id="hapticToggle" tabindex="0" role="switch" aria-checked="true">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-info">
+                        <div class="settings-label">Animationen</div>
+                        <div class="settings-description">Bewegungseffekte und Übergänge</div>
+                    </div>
+                    <div class="toggle-switch active" id="animationsToggle" tabindex="0" role="switch" aria-checked="true">
                         <div class="toggle-slider"></div>
                     </div>
                 </div>
             </div>
 
             <div class="settings-section">
-                <div class="settings-title">Sicherheit</div>
+                <div class="settings-title">🔐 Sicherheit & Datenschutz</div>
                 <div class="settings-item">
                     <div class="settings-info">
-                        <div class="settings-label">Verschlüsselung</div>
-                        <div class="settings-description">AES-256-GCM Standard</div>
+                        <div class="settings-label">Verschlüsselungsalgorithmus</div>
+                        <div class="settings-description">Verwendeter Kryptographie-Standard</div>
                     </div>
-                    <span class="card-subtitle">AES-256-GCM</span>
+                    <span class="settings-value">AES-256-GCM</span>
                 </div>
                 <div class="settings-item">
                     <div class="settings-info">
-                        <div class="settings-label">PBKDF2 Iterationen</div>
-                        <div class="settings-description">Schlüssel-Ableitung Sicherheit</div>
+                        <div class="settings-label">Schlüssel-Ableitungsfunktion</div>
+                        <div class="settings-description">PBKDF2 mit SHA-256</div>
                     </div>
-                    <span class="card-subtitle">100.000</span>
+                    <span class="settings-value">100.000 Iterationen</span>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-info">
+                        <div class="settings-label">Datenverarbeitung</div>
+                        <div class="settings-description">Ausschließlich lokal im Browser</div>
+                    </div>
+                    <span class="settings-value">🔒 Offline</span>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-info">
+                        <div class="settings-label">Verlauf löschen</div>
+                        <div class="settings-description">Alle gespeicherten Tresor-Einträge entfernen</div>
+                    </div>
+                    <button class="btn btn-small btn-danger" id="clearAllDataButton">
+                        🗑️ Löschen
+                    </button>
                 </div>
             </div>
 
             <div class="settings-section">
-                <div class="settings-title">Info</div>
+                <div class="settings-title">ℹ️ Informationen</div>
                 <div class="settings-item">
                     <div class="settings-info">
                         <div class="settings-label">Version</div>
-                        <div class="settings-description">TapVault v2.0.0</div>
+                        <div class="settings-description">TapVault</div>
+                    </div>
+                    <span class="settings-value">v2.1.0</span>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-info">
+                        <div class="settings-label">Lizenz</div>
+                        <div class="settings-description">Open Source MIT Lizenz</div>
+                    </div>
+                    <span class="settings-value">MIT</span>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-info">
+                        <div class="settings-label">Entwicklung</div>
+                        <div class="settings-description">Vollständig verschlüsselt • Keine Server • Privat</div>
                     </div>
                 </div>
                 <div class="settings-item">
                     <div class="settings-info">
-                        <div class="settings-label">Open Source</div>
-                        <div class="settings-description">MIT Lizenz • Keine Server • Vollständig verschlüsselt</div>
+                        <div class="settings-label">Browser-Kompatibilität</div>
+                        <div class="settings-description" id="browserCompatibility">Wird geladen...</div>
                     </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-title">🛡️ Datenschutz-Garantie</div>
+                <div class="info-card-text">
+                    TapVault verarbeitet alle Daten ausschließlich lokal in Ihrem Browser. 
+                    Es werden keine Informationen an externe Server gesendet. 
+                    Ihre Privatsphäre ist zu 100% geschützt.
                 </div>
             </div>
         </div>
 
         <!-- Bottom Navigation -->
-        <nav class="bottom-nav">
-            <div class="nav-item active" data-screen="home">
+        <nav class="bottom-nav" role="navigation" aria-label="Hauptnavigation">
+            <div class="nav-item active" data-screen="home" tabindex="0" role="button" aria-label="Startseite">
                 <div class="nav-icon">🏠</div>
                 <div class="nav-label">Home</div>
             </div>
-            <div class="nav-item" data-screen="scanner">
+            <div class="nav-item" data-screen="create" tabindex="0" role="button" aria-label="Tresor erstellen">
+                <div class="nav-icon">➕</div>
+                <div class="nav-label">Erstellen</div>
+            </div>
+            <div class="nav-item" data-screen="scanner" tabindex="0" role="button" aria-label="QR-Scanner">
                 <div class="nav-icon">📷</div>
                 <div class="nav-label">Scanner</div>
             </div>
-            <div class="nav-item" data-screen="create">
-                <div class="nav-icon">🔒</div>
-                <div class="nav-label">Erstellen</div>
-            </div>
-            <div class="nav-item" data-screen="settings">
+            <div class="nav-item" data-screen="settings" tabindex="0" role="button" aria-label="Einstellungen">
                 <div class="nav-icon">⚙️</div>
                 <div class="nav-label">Einstellungen</div>
             </div>
         </nav>
-    </div>
 
-    <!-- Modal -->
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-title" id="modalTitle">Titel</div>
-            <div class="modal-text" id="modalText">Text</div>
-            <div class="modal-actions">
-                <button class="btn btn-secondary" id="modalCancel">Abbrechen</button>
-                <button class="btn btn-primary" id="modalConfirm">Bestätigen</button>
+        <!-- Modal -->
+        <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <div class="modal-content">
+                <div class="modal-title" id="modalTitle">Titel</div>
+                <div class="modal-text" id="modalText">Text</div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" id="modalCancel">Abbrechen</button>
+                    <button class="btn btn-primary" id="modalConfirm">Bestätigen</button>
+                </div>
             </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="hidden" style="position: fixed; top: 20px; right: 20px; background: var(--success-color); color: white; padding: 12px 20px; border-radius: var(--radius); z-index: 3000; box-shadow: var(--shadow);">
+            <div id="toastMessage"></div>
         </div>
     </div>
 
-    <!-- QR.js für QR-Code Generation -->
+    <!-- QR Code Library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    <!-- JSQRScanner für QR-Code Erkennung -->
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     
     <script>
-        /**
-         * TapVault - Secure Mobile Vault with AES-256-GCM Encryption
-         * Enhanced version with camera integration, QR scanning, and link-based vault sharing
-         */
-
-        class TapVaultApp {
+        class TapVault {
             constructor() {
                 this.currentScreen = 'home';
-                this.settings = this.loadSettings();
-                this.unlockState = {
-                    currentActions: 0,
-                    requiredActions: 0,
-                    mode: 'tap',
-                    vaultData: null,
-                    isShakeMode: false,
-                    decryptedMessage: null
-                };
-                
-                // Shake detection variables
-                this.shakeThreshold = 15;
-                this.lastX = null;
-                this.lastY = null;
-                this.lastZ = null;
-                this.shakeCount = 0;
-                this.lastShakeTime = 0;
-                
-                // Camera and QR scanning
-                this.stream = null;
-                this.scanningInterval = null;
-                this.canvas = document.createElement('canvas');
-                this.canvasContext = this.canvas.getContext('2d');
-                
-                // Current vault link for sharing
                 this.currentVaultLink = null;
-                
+                this.currentStream = null;
+                this.qrScanner = null;
+                this.unlockState = {
+                    isShakeMode: false,
+                    currentActions: 0,
+                    requiredActions: 50,
+                    lastShake: 0,
+                    shakeThreshold: 10,
+                    encryptedData: null,
+                    isComplete: false,
+                    vaultTitle: ''
+                };
+                this.settings = this.loadSettings();
+                this.shakeDetection = {
+                    lastX: null,
+                    lastY: null,
+                    lastZ: null,
+                    lastUpdate: 0,
+                    shakeThreshold: 10
+                };
+
                 this.init();
             }
 
             init() {
                 this.bindEvents();
+                this.setupShakeDetection();
                 this.applySettings();
                 this.checkDeepLink();
-                this.setupShakeDetection();
+                this.updateBrowserCompatibility();
+                this.setupAccessibility();
             }
 
-            // Enhanced AES-256-GCM Encryption
-            async deriveKey(password, salt) {
-                const encoder = new TextEncoder();
-                const keyMaterial = await crypto.subtle.importKey(
-                    'raw',
-                    encoder.encode(password),
-                    { name: 'PBKDF2' },
-                    false,
-                    ['deriveBits', 'deriveKey']
-                );
-
-                return crypto.subtle.deriveKey(
-                    {
-                        name: 'PBKDF2',
-                        salt: salt,
-                        iterations: 100000,
-                        hash: 'SHA-256'
-                    },
-                    keyMaterial,
-                    { name: 'AES-GCM', length: 256 },
-                    false,
-                    ['encrypt', 'decrypt']
-                );
-            }
-
-            async encryptMessage(message, password) {
-                const encoder = new TextEncoder();
-                const data = encoder.encode(message);
-                
-                // Generate random salt and IV
-                const salt = crypto.getRandomValues(new Uint8Array(32));
-                const iv = crypto.getRandomValues(new Uint8Array(12));
-                
-                // Derive key from password and salt
-                const key = await this.deriveKey(password, salt);
-                
-                // Encrypt the message
-                const encrypted = await crypto.subtle.encrypt(
-                    { name: 'AES-GCM', iv: iv },
-                    key,
-                    data
-                );
-                
-                // Combine salt, iv, and encrypted data
-                const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
-                combined.set(salt, 0);
-                combined.set(iv, salt.length);
-                combined.set(new Uint8Array(encrypted), salt.length + iv.length);
-                
-                return btoa(String.fromCharCode(...combined));
-            }
-
-            async decryptMessage(encryptedData, password) {
-                try {
-                    const data = new Uint8Array(atob(encryptedData).split('').map(c => c.charCodeAt(0)));
-                    
-                    // Extract salt, iv, and encrypted message
-                    const salt = data.slice(0, 32);
-                    const iv = data.slice(32, 44);
-                    const encrypted = data.slice(44);
-                    
-                    // Derive key from password and salt
-                    const key = await this.deriveKey(password, salt);
-                    
-                    // Decrypt the message
-                    const decrypted = await crypto.subtle.decrypt(
-                        { name: 'AES-GCM', iv: iv },
-                        key,
-                        encrypted
-                    );
-                    
-                    const decoder = new TextDecoder();
-                    return decoder.decode(decrypted);
-                } catch (error) {
-                    throw new Error('Entschlüsselung fehlgeschlagen - falsches Passwort oder beschädigte Daten');
-                }
-            }
-
-            // Event Binding
-            bindEvents() {
-                // Navigation
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        const screen = e.currentTarget.dataset.screen;
-                        this.showScreen(screen);
-                    });
-                });
-
-                // Theme toggle
-                document.getElementById('themeToggle').addEventListener('click', () => this.toggleTheme());
-                
-                // Create vault
-                document.getElementById('createVaultButton').addEventListener('click', () => this.showScreen('create'));
-                document.getElementById('openVaultButton').addEventListener('click', () => this.showScreen('scanner'));
-                
-                // Create vault form
-                document.getElementById('modeToggle').addEventListener('click', () => this.toggleMode());
-                document.getElementById('actionSlider').addEventListener('input', (e) => this.updateSliderValue(e));
-                document.getElementById('createButton').addEventListener('click', () => this.createVault());
-                
-                // Scanner
-                document.getElementById('scanButton').addEventListener('click', () => this.showScreen('scanner'));
-                document.getElementById('processLinkButton').addEventListener('click', () => this.processLink());
-                
-                // Unlock interaction
-                document.getElementById('unlockButton').addEventListener('click', () => this.handleUnlockAction());
-                document.getElementById('copyMessageButton').addEventListener('click', () => this.copyDecryptedMessage());
-                document.getElementById('newUnlockButton').addEventListener('click', () => this.showScreen('scanner'));
-                
-                // Result screen
-                document.getElementById('copyLinkButton').addEventListener('click', () => this.copyVaultLink());
-                document.getElementById('shareButton').addEventListener('click', () => this.shareVaultLink());
-                document.getElementById('backToHomeButton').addEventListener('click', () => this.showScreen('home'));
-                
-                // Settings toggles
-                document.getElementById('defaultModeToggle').addEventListener('click', () => this.toggleDefaultMode());
-                document.getElementById('darkModeToggle').addEventListener('click', () => this.toggleTheme());
-                document.getElementById('hapticToggle').addEventListener('click', () => this.toggleHaptic());
-                
-                // Settings inputs
-                document.getElementById('defaultActions').addEventListener('change', (e) => this.updateDefaultActions(e));
-                
-                // Modal
-                document.getElementById('modalCancel').addEventListener('click', () => this.closeModal());
-            }
-
-            // Camera and QR Scanner
-            async startCamera() {
-                try {
-                    this.stream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: 'environment',
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        }
-                    });
-                    
-                    const video = document.getElementById('video');
-                    video.srcObject = this.stream;
-                    
-                    // Start scanning for QR codes
-                    this.startQRScanning();
-                } catch (error) {
-                    console.error('Kamera-Zugriff fehlgeschlagen:', error);
-                    this.showModal('Kamera-Fehler', 'Kamera-Zugriff wurde verweigert oder ist nicht verfügbar. Sie können den Link auch manuell eingeben.');
-                }
-            }
-
-            stopCamera() {
-                if (this.stream) {
-                    this.stream.getTracks().forEach(track => track.stop());
-                    this.stream = null;
-                }
-                
-                if (this.scanningInterval) {
-                    clearInterval(this.scanningInterval);
-                    this.scanningInterval = null;
-                }
-            }
-
-            startQRScanning() {
-                const video = document.getElementById('video');
-                
-                this.scanningInterval = setInterval(() => {
-                    if (video.readyState === video.HAVE_ENOUGH_DATA && typeof jsQR !== 'undefined') {
-                        this.canvas.height = video.videoHeight;
-                        this.canvas.width = video.videoWidth;
-                        this.canvasContext.drawImage(video, 0, 0, this.canvas.width, this.canvas.height);
-                        
-                        const imageData = this.canvasContext.getImageData(0, 0, this.canvas.width, this.canvas.height);
-                        const code = jsQR(imageData.data, imageData.width, imageData.height);
-                        
-                        if (code && code.data.startsWith('tapvault://')) {
-                            this.stopCamera();
-                            document.getElementById('linkInput').value = code.data;
-                            this.processLink();
-                        }
-                    }
-                }, 300);
-            }
-
-            processLink() {
-                const linkInput = document.getElementById('linkInput');
-                const link = linkInput.value.trim();
-                
-                if (!link) {
-                    this.showModal('Fehler', 'Bitte geben Sie einen gültigen Link ein oder scannen Sie einen QR-Code.');
-                    return;
-                }
-                
-                if (!link.startsWith('tapvault://')) {
-                    this.showModal('Fehler', 'Ungültiger TapVault-Link. Der Link muss mit "tapvault://" beginnen.');
-                    return;
-                }
-                
-                try {
-                    const vaultData = this.parseVaultLink(link);
-                    this.openVault(vaultData);
-                } catch (error) {
-                    this.showModal('Fehler', 'Link konnte nicht verarbeitet werden: ' + error.message);
-                }
-            }
-
-            parseVaultLink(link) {
-                try {
-                    // Parse tapvault://base64encodeddata
-                    const data = link.replace('tapvault://', '');
-                    const decoded = atob(data);
-                    const vaultData = JSON.parse(decoded);
-                    
-                    // Validate required fields
-                    if (!vaultData.encryptedMessage || !vaultData.requiredActions || !vaultData.mode) {
-                        throw new Error('Unvollständige Vault-Daten');
-                    }
-                    
-                    return vaultData;
-                } catch (error) {
-                    throw new Error('Ungültiges Link-Format oder beschädigte Daten');
-                }
-            }
-
-            createVaultLink(vaultData) {
-                const encoded = btoa(JSON.stringify(vaultData));
-                return `tapvault://${encoded}`;
-            }
-
-            // Screen Management
-            showScreen(screenName) {
-                // Hide all screens
-                document.querySelectorAll('.screen').forEach(screen => {
-                    screen.classList.remove('active');
-                });
-                
-                // Show target screen
-                const targetScreen = document.getElementById(`${screenName}Screen`);
-                if (targetScreen) {
-                    targetScreen.classList.add('active');
-                    targetScreen.classList.add('fade-in');
-                }
-                
-                // Update navigation
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                
-                const activeNavItem = document.querySelector(`[data-screen="${screenName}"]`);
-                if (activeNavItem) {
-                    activeNavItem.classList.add('active');
-                }
-                
-                this.currentScreen = screenName;
-                
-                // Screen-specific initialization
-                if (screenName === 'scanner') {
-                    this.startCamera();
-                } else {
-                    this.stopCamera();
-                }
-
-                // Clear form when switching screens
-                if (screenName === 'create') {
-                    this.resetCreateForm();
-                } else if (screenName === 'scanner') {
-                    document.getElementById('linkInput').value = '';
-                }
-            }
-
-            resetCreateForm() {
-                document.getElementById('messageInput').value = '';
-                document.getElementById('titleInput').value = '';
-                document.getElementById('actionSlider').value = this.settings.defaultActions || 50;
-                this.updateSliderValue({ target: document.getElementById('actionSlider') });
-                
-                const modeToggle = document.getElementById('modeToggle');
-                if (this.settings.defaultMode === 'shake') {
-                    modeToggle.classList.add('active');
-                    document.getElementById('modeLabel').textContent = 'Shake-Modus';
-                    document.getElementById('actionLabel').textContent = 'Schüttelungen erforderlich';
-                } else {
-                    modeToggle.classList.remove('active');
-                    document.getElementById('modeLabel').textContent = 'Tap-Modus';
-                    document.getElementById('actionLabel').textContent = 'Taps erforderlich';
-                }
-            }
-
-            // Vault Creation
-            async createVault() {
-                const message = document.getElementById('messageInput').value.trim();
-                const title = document.getElementById('titleInput').value.trim() || 'Geheimer Tresor';
-                const mode = document.getElementById('modeToggle').classList.contains('active') ? 'shake' : 'tap';
-                const requiredActions = parseInt(document.getElementById('actionSlider').value);
-                
-                if (!message) {
-                    this.showModal('Fehler', 'Bitte geben Sie eine Nachricht ein.');
-                    return;
-                }
-                
-                if (message.length > 10000) {
-                    this.showModal('Fehler', 'Die Nachricht ist zu lang. Maximal 10.000 Zeichen erlaubt.');
-                    return;
-                }
-                
-                try {
-                    // Show loading state
-                    const createButton = document.getElementById('createButton');
-                    const originalText = createButton.innerHTML;
-                    createButton.innerHTML = '🔄 Erstelle Tresor...';
-                    createButton.disabled = true;
-                    
-                    // Create unique password from actions and additional entropy
-                    const timestamp = Date.now();
-                    const entropy = crypto.getRandomValues(new Uint8Array(16));
-                    const entropyStr = Array.from(entropy, byte => byte.toString(16).padStart(2, '0')).join('');
-                    const password = this.generatePassword(requiredActions, mode, timestamp, entropyStr);
-                    
-                    // Encrypt message with AES-256-GCM
-                    const encryptedMessage = await this.encryptMessage(message, password);
-                    
-                    // Create vault data
-                    const vaultData = {
-                        version: '2.0',
-                        title: title,
-                        encryptedMessage: encryptedMessage,
-                        requiredActions: requiredActions,
-                        mode: mode,
-                        created: new Date().toISOString(),
-                        algorithm: 'AES-256-GCM',
-                        timestamp: timestamp,
-                        entropy: entropyStr
-                    };
-                    
-                    // Create shareable link
-                    const vaultLink = this.createVaultLink(vaultData);
-                    
-                    // Generate QR code
-                    await this.generateQRCode(vaultLink);
-                    
-                    // Store link for sharing
-                    this.currentVaultLink = vaultLink;
-                    
-                    // Update recent vaults
-                    this.addToRecentVaults(vaultData);
-                    
-                    // Show result screen
-                    this.showScreen('result');
-                    
-                    // Reset button state
-                    createButton.innerHTML = originalText;
-                    createButton.disabled = false;
-                    
-                } catch (error) {
-                    console.error('Vault creation error:', error);
-                    this.showModal('Fehler', 'Tresor konnte nicht erstellt werden: ' + error.message);
-                    
-                    // Reset button state
-                    const createButton = document.getElementById('createButton');
-                    createButton.innerHTML = '🔒 Tresor erstellen';
-                    createButton.disabled = false;
-                }
-            }
-
-            generatePassword(actions, mode, timestamp, entropy) {
-                // Generate secure deterministic password
-                const seed = `${actions}-${mode}-${timestamp}-${entropy}-tapvault-v2`;
-                // Use a more complex derivation for better security
-                return btoa(seed + crypto.getRandomValues(new Uint8Array(32)).join('')).replace(/[^a-zA-Z0-9]/g, '').substring(0, 64);
-            }
-
-            async generateQRCode(data) {
-                const qrContainer = document.getElementById('qrcode');
-                qrContainer.innerHTML = '';
-                
-                try {
-                    await QRCode.toCanvas(qrContainer, data, {
-                        width: 280,
-                        margin: 2,
-                        color: {
-                            dark: '#000000',
-                            light: '#ffffff'
-                        },
-                        errorCorrectionLevel: 'M'
-                    });
-                } catch (error) {
-                    console.error('QR-Code Generation fehlgeschlagen:', error);
-                    qrContainer.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-secondary);">QR-Code Generation fehlgeschlagen</div>';
-                }
-            }
-
-            copyVaultLink() {
-                if (this.currentVaultLink) {
-                    navigator.clipboard.writeText(this.currentVaultLink).then(() => {
-                        this.showModal('Erfolg', 'Link wurde in die Zwischenablage kopiert.');
-                        this.hapticFeedback();
-                    }).catch(() => {
-                        // Fallback for older browsers
-                        const textArea = document.createElement('textarea');
-                        textArea.value = this.currentVaultLink;
-                        document.body.appendChild(textArea);
-                        textArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textArea);
-                        this.showModal('Erfolg', 'Link wurde kopiert.');
-                    });
-                }
-            }
-
-            shareVaultLink() {
-                if (this.currentVaultLink && navigator.share) {
-                    navigator.share({
-                        title: 'TapVault - Sicherer Tresor',
-                        text: 'Öffnen Sie diesen verschlüsselten Tresor mit TapVault',
-                        url: this.currentVaultLink
-                    }).catch(console.error);
-                } else {
-                    this.copyVaultLink();
-                }
-            }
-
-            // Vault Opening
-            openVault(vaultData) {
-                this.unlockState = {
-                    currentActions: 0,
-                    requiredActions: vaultData.requiredActions,
-                    mode: vaultData.mode,
-                    vaultData: vaultData,
-                    isShakeMode: vaultData.mode === 'shake',
-                    decryptedMessage: null
+            loadSettings() {
+                const defaults = {
+                    darkMode: true,
+                    hapticFeedback: true,
+                    defaultMode: 'tap',
+                    defaultActions: 50,
+                    autoCamera: true,
+                    animations: true
                 };
                 
-                // Update UI
-                document.getElementById('unlockTitle').textContent = vaultData.title;
-                document.getElementById('requiredActions').textContent = vaultData.requiredActions;
-                document.getElementById('unlockMode').textContent = vaultData.mode === 'shake' ? 'Schüttelungen' : 'Taps';
-                document.getElementById('progressText').textContent = `0 / ${vaultData.requiredActions}`;
-                document.getElementById('progressSubtitle').textContent = vaultData.mode === 'shake' ? 'Schüttelungen ausgeführt' : 'Taps ausgeführt';
-                document.getElementById('unlockButtonText').textContent = vaultData.mode === 'shake' ? 'SHAKE' : 'TAP';
-                
-                // Update button style
-                const unlockButton = document.getElementById('unlockButton');
-                if (vaultData.mode === 'shake') {
-                    unlockButton.classList.add('shake-mode');
+                const saved = localStorage.getItem('tapvault_settings');
+                return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+            }
+
+            saveSettings() {
+                localStorage.setItem('tapvault_settings', JSON.stringify(this.settings));
+            }
+
+            applySettings() {
+                // Apply theme
+                if (!this.settings.darkMode) {
+                    document.body.dataset.theme = 'light';
+                    document.getElementById('themeToggle').textContent = '☀️';
+                    document.getElementById('darkModeToggle').classList.remove('active');
+                    document.getElementById('darkModeToggle').setAttribute('aria-checked', 'false');
                 } else {
-                    unlockButton.classList.remove('shake-mode');
+                    document.getElementById('darkModeToggle').setAttribute('aria-checked', 'true');
                 }
                 
-                // Reset progress
-                this.updateProgress(0, vaultData.requiredActions);
-                
-                // Hide decrypted message
-                document.getElementById('decryptedMessage').classList.add('hidden');
-                
-                this.showScreen('unlock');
-            }
-
-            // Unlock Interaction
-            handleUnlockAction() {
-                if (!this.unlockState.vaultData) return;
-                
-                this.unlockState.currentActions++;
-                this.hapticFeedback();
-                
-                // Add visual feedback
-                const unlockButton = document.getElementById('unlockButton');
-                unlockButton.classList.add('pulse');
-                setTimeout(() => unlockButton.classList.remove('pulse'), 300);
-                
-                // Update progress
-                this.updateProgress(this.unlockState.currentActions, this.unlockState.requiredActions);
-                document.getElementById('progressText').textContent = 
-                    `${this.unlockState.currentActions} / ${this.unlockState.requiredActions}`;
-                
-                // Check if unlock is complete
-                if (this.unlockState.currentActions >= this.unlockState.requiredActions) {
-                    this.completeUnlock();
-                }
-            }
-
-            async completeUnlock() {
-                try {
-                    const vaultData = this.unlockState.vaultData;
-                    const password = this.generatePassword(
-                        vaultData.requiredActions, 
-                        vaultData.mode, 
-                        vaultData.timestamp, 
-                        vaultData.entropy
-                    );
-                    
-                    // Decrypt message
-                    const decryptedMessage = await this.decryptMessage(vaultData.encryptedMessage, password);
-                    
-                    // Show decrypted message
-                    document.getElementById('decryptedText').textContent = decryptedMessage;
-                    document.getElementById('decryptedMessage').classList.remove('hidden');
-                    
-                    // Hide unlock button
-                    document.getElementById('unlockButton').style.display = 'none';
-                    document.getElementById('progressText').textContent = '🎉 Erfolgreich entschlüsselt!';
-                    document.getElementById('progressSubtitle').textContent = 'Tresor wurde geöffnet';
-                    
-                    this.unlockState.decryptedMessage = decryptedMessage;
-                    this.hapticFeedback();
-                    
-                } catch (error) {
-                    console.error('Decryption error:', error);
-                    this.showModal('Entschlüsselungsfehler', 'Die Nachricht konnte nicht entschlüsselt werden. Möglicherweise sind die Daten beschädigt.');
-                }
-            }
-
-            copyDecryptedMessage() {
-                if (this.unlockState.decryptedMessage) {
-                    navigator.clipboard.writeText(this.unlockState.decryptedMessage).then(() => {
-                        this.showModal('Erfolg', 'Nachricht wurde in die Zwischenablage kopiert.');
-                        this.hapticFeedback();
-                    }).catch(() => {
-                        this.showModal('Fehler', 'Nachricht konnte nicht kopiert werden.');
-                    });
-                }
-            }
-
-            // Progress Management
-            updateProgress(current, total) {
-                const progress = (current / total) * 100;
-                const circumference = 2 * Math.PI * 54;
-                const offset = circumference - (progress / 100) * circumference;
-                
-                const progressCircle = document.getElementById('progressCircle');
-                progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
-                progressCircle.style.strokeDashoffset = offset;
-            }
-
-            // Mode Toggle
-            toggleMode() {
-                const modeToggle = document.getElementById('modeToggle');
-                const modeLabel = document.getElementById('modeLabel');
-                const actionLabel = document.getElementById('actionLabel');
-                
-                modeToggle.classList.toggle('active');
-                
-                if (modeToggle.classList.contains('active')) {
-                    modeLabel.textContent = 'Shake-Modus';
-                    actionLabel.textContent = 'Schüttelungen erforderlich';
+                // Apply default mode
+                if (this.settings.defaultMode === 'shake') {
+                    document.getElementById('defaultModeToggle').classList.add('active');
+                    document.getElementById('defaultModeToggle').setAttribute('aria-checked', 'true');
                 } else {
-                    modeLabel.textContent = 'Tap-Modus';
-                    actionLabel.textContent = 'Taps erforderlich';
+                    document.getElementById('defaultModeToggle').setAttribute('aria-checked', 'false');
                 }
                 
-                this.hapticFeedback();
-            }
-
-            // Slider Value Update
-            updateSliderValue(e) {
-                const value = e.target.value;
-                document.getElementById('actionValue').textContent = value;
-            }
-
-            // Shake Detection
-            setupShakeDetection() {
-                if (window.DeviceMotionEvent) {
-                    window.addEventListener('devicemotion', (e) => {
-                        if (this.unlockState.isShakeMode && this.currentScreen === 'unlock') {
-                            this.detectShake(e);
-                        }
-                    });
-                }
-            }
-
-            detectShake(event) {
-                const acceleration = event.accelerationIncludingGravity;
-                const x = acceleration.x;
-                const y = acceleration.y;
-                const z = acceleration.z;
+                // Apply default actions
+                document.getElementById('defaultActions').value = this.settings.defaultActions;
+                document.getElementById('actionSlider').value = this.settings.defaultActions;
+                document.getElementById('actionValue').textContent = this.settings.defaultActions;
                 
-                if (this.lastX !== null && this.lastY !== null && this.lastZ !== null) {
-                    const deltaX = Math.abs(x - this.lastX);
-                    const deltaY = Math.abs(y - this.lastY);
-                    const deltaZ = Math.abs(z - this.lastZ);
-                    
-                    if ((deltaX + deltaY + deltaZ) > this.shakeThreshold) {
-                        const now = Date.now();
-                        if (now - this.lastShakeTime > 200) { // Prevent too frequent shake detection
-                            this.handleUnlockAction();
-                            this.lastShakeTime = now;
-                            
-                            // Visual shake feedback
-                            const unlockButton = document.getElementById('unlockButton');
-                            unlockButton.classList.add('shake-animation');
-                            setTimeout(() => unlockButton.classList.remove('shake-animation'), 500);
-                        }
-                    }
-                }
-                
-                this.lastX = x;
-                this.lastY = y;
-                this.lastZ = z;
-            }
-
-            // Theme Management
-            toggleTheme() {
-                const body = document.body;
-                const themeToggle = document.getElementById('themeToggle');
-                const darkModeToggle = document.getElementById('darkModeToggle');
-                
-                if (body.dataset.theme === 'dark') {
-                    body.dataset.theme = 'light';
-                    themeToggle.textContent = '☀️';
-                    darkModeToggle.classList.remove('active');
+                // Apply haptic setting
+                if (!this.settings.hapticFeedback) {
+                    document.getElementById('hapticToggle').classList.remove('active');
+                    document.getElementById('hapticToggle').setAttribute('aria-checked', 'false');
                 } else {
-                    body.dataset.theme = 'dark';
-                    themeToggle.textContent = '🌙
-                                            // Add click handlers
-                    container.querySelectorAll('.vault-item').forEach(item => {
-                        item.addEventListener('click', () => {
-                            const link = item.dataset.link;
-                            if (link) {
-                                document.getElementById('linkInput').value = link;
-                                this.showScreen('scanner');
-                                this.processLink();
-                            }
-                        });
-                    });
+                    document.getElementById('hapticToggle').setAttribute('aria-checked', 'true');
                 }
-            }
 
-            // Enhanced AES-256-GCM Encryption
-            async deriveKey(password, salt) {
-                const encoder = new TextEncoder();
-                const keyMaterial = await crypto.subtle.importKey(
-                    'raw',
-                    encoder.encode(password),
-                    { name: 'PBKDF2' },
-                    false,
-                    ['deriveBits', 'deriveKey']
-                );
-
-                return crypto.subtle.deriveKey(
-                    {
-                        name: 'PBKDF2',
-                        salt: salt,
-                        iterations: 100000,
-                        hash: 'SHA-256'
-                    },
-                    keyMaterial,
-                    { name: 'AES-GCM', length: 256 },
-                    false,
-                    ['encrypt', 'decrypt']
-                );
-            }
-
-            async encryptMessage(message, password) {
-                const encoder = new TextEncoder();
-                const data = encoder.encode(message);
-                
-                // Generate random salt and IV
-                const salt = crypto.getRandomValues(new Uint8Array(32));
-                const iv = crypto.getRandomValues(new Uint8Array(12));
-                
-                // Derive key from password and salt
-                const key = await this.deriveKey(password, salt);
-                
-                // Encrypt the message
-                const encrypted = await crypto.subtle.encrypt(
-                    { name: 'AES-GCM', iv: iv },
-                    key,
-                    data
-                );
-                
-                // Combine salt, iv, and encrypted data
-                const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
-                combined.set(salt, 0);
-                combined.set(iv, salt.length);
-                combined.set(new Uint8Array(encrypted), salt.length + iv.length);
-                
-                return btoa(String.fromCharCode(...combined));
-            }
-
-            async decryptMessage(encryptedData, password) {
-                try {
-                    const data = new Uint8Array(atob(encryptedData).split('').map(c => c.charCodeAt(0)));
-                    
-                    // Extract salt, iv, and encrypted message
-                    const salt = data.slice(0, 32);
-                    const iv = data.slice(32, 44);
-                    const encrypted = data.slice(44);
-                    
-                    // Derive key from password and salt
-                    const key = await this.deriveKey(password, salt);
-                    
-                    // Decrypt the message
-                    const decrypted = await crypto.subtle.decrypt(
-                        { name: 'AES-GCM', iv: iv },
-                        key,
-                        encrypted
-                    );
-                    
-                    const decoder = new TextDecoder();
-                    return decoder.decode(decrypted);
-                } catch (error) {
-                    throw new Error('Entschlüsselung fehlgeschlagen - falsches Passwort oder beschädigte Daten');
+                // Apply auto camera setting
+                if (!this.settings.autoCamera) {
+                    document.getElementById('autoCameraToggle').classList.remove('active');
+                    document.getElementById('autoCameraToggle').setAttribute('aria-checked', 'false');
+                } else {
+                    document.getElementById('autoCameraToggle').setAttribute('aria-checked', 'true');
                 }
+
+                // Apply animations setting
+                if (!this.settings.animations) {
+                    document.getElementById('animationsToggle').classList.remove('active');
+                    document.getElementById('animationsToggle').setAttribute('aria-checked', 'false');
+                    document.body.classList.add('no-animations');
+                } else {
+                    document.getElementById('animationsToggle').setAttribute('aria-checked', 'true');
+                }
+                
+                // Display recent vaults
+                this.displayRecentVaults();
             }
 
-            // Event Binding
-            bindEvents() {
-                // Navigation
+            setupAccessibility() {
+                // Add keyboard navigation for nav items
                 document.querySelectorAll('.nav-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        const screen = e.currentTarget.dataset.screen;
-                        this.showScreen(screen);
+                    item.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            this.navigateTo(item.dataset.screen);
+                        }
                     });
                 });
 
+                // Add keyboard navigation for toggle switches
+                document.querySelectorAll('.toggle-switch').forEach(toggle => {
+                    toggle.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            toggle.click();
+                        }
+                    });
+                });
+
+                // Add keyboard navigation for quick actions
+                document.querySelectorAll('.quick-action').forEach(action => {
+                    action.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            action.click();
+                        }
+                    });
+                });
+            }
+
+            bindEvents() {
                 // Theme toggle
                 document.getElementById('themeToggle').addEventListener('click', () => this.toggleTheme());
-                
-                // Create vault
-                document.getElementById('createVaultButton').addEventListener('click', () => this.showScreen('create'));
-                document.getElementById('openVaultButton').addEventListener('click', () => this.showScreen('scanner'));
-                
-                // Create vault form
-                document.getElementById('modeToggle').addEventListener('click', () => this.toggleMode());
-                document.getElementById('actionSlider').addEventListener('input', (e) => this.updateSliderValue(e));
-                document.getElementById('createButton').addEventListener('click', () => this.createVault());
-                
-                // Scanner
-                document.getElementById('scanButton').addEventListener('click', () => this.showScreen('scanner'));
-                document.getElementById('processLinkButton').addEventListener('click', () => this.processLink());
-                
-                // Unlock interaction
-                document.getElementById('unlockButton').addEventListener('click', () => this.handleUnlockAction());
-                document.getElementById('copyMessageButton').addEventListener('click', () => this.copyDecryptedMessage());
-                document.getElementById('newUnlockButton').addEventListener('click', () => this.showScreen('scanner'));
-                
-                // Result screen
-                document.getElementById('copyLinkButton').addEventListener('click', () => this.copyVaultLink());
-                document.getElementById('shareButton').addEventListener('click', () => this.shareVaultLink());
-                document.getElementById('backToHomeButton').addEventListener('click', () => this.showScreen('home'));
-                
-                // Settings toggles
-                document.getElementById('defaultModeToggle').addEventListener('click', () => this.toggleDefaultMode());
-                document.getElementById('darkModeToggle').addEventListener('click', () => this.toggleTheme());
-                document.getElementById('hapticToggle').addEventListener('click', () => this.toggleHaptic());
-                
-                // Settings inputs
-                document.getElementById('defaultActions').addEventListener('change', (e) => this.updateDefaultActions(e));
-                
-                // Modal
-                document.getElementById('modalCancel').addEventListener('click', () => this.closeModal());
-            }
 
-            // Camera and QR Scanner
-            async startCamera() {
-                try {
-                    this.stream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: 'environment',
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        }
-                    });
-                    
-                    const video = document.getElementById('video');
-                    video.srcObject = this.stream;
-                    
-                    // Start scanning for QR codes
-                    this.startQRScanning();
-                } catch (error) {
-                    console.error('Kamera-Zugriff fehlgeschlagen:', error);
-                    this.showModal('Kamera-Fehler', 'Kamera-Zugriff wurde verweigert oder ist nicht verfügbar. Sie können den Link auch manuell eingeben.');
-                }
-            }
-
-            stopCamera() {
-                if (this.stream) {
-                    this.stream.getTracks().forEach(track => track.stop());
-                    this.stream = null;
-                }
-                
-                if (this.scanningInterval) {
-                    clearInterval(this.scanningInterval);
-                    this.scanningInterval = null;
-                }
-            }
-
-            startQRScanning() {
-                const video = document.getElementById('video');
-                
-                this.scanningInterval = setInterval(() => {
-                    if (video.readyState === video.HAVE_ENOUGH_DATA && typeof jsQR !== 'undefined') {
-                        this.canvas.height = video.videoHeight;
-                        this.canvas.width = video.videoWidth;
-                        this.canvasContext.drawImage(video, 0, 0, this.canvas.width, this.canvas.height);
-                        
-                        const imageData = this.canvasContext.getImageData(0, 0, this.canvas.width, this.canvas.height);
-                        const code = jsQR(imageData.data, imageData.width, imageData.height);
-                        
-                        if (code && code.data.startsWith('tapvault://')) {
-                            this.stopCamera();
-                            document.getElementById('linkInput').value = code.data;
-                            this.processLink();
-                        }
-                    }
-                }, 300);
-            }
-
-            processLink() {
-                const linkInput = document.getElementById('linkInput');
-                const link = linkInput.value.trim();
-                
-                if (!link) {
-                    this.showModal('Fehler', 'Bitte geben Sie einen gültigen Link ein oder scannen Sie einen QR-Code.');
-                    return;
-                }
-                
-                if (!link.startsWith('tapvault://')) {
-                    this.showModal('Fehler', 'Ungültiger TapVault-Link. Der Link muss mit "tapvault://" beginnen.');
-                    return;
-                }
-                
-                try {
-                    const vaultData = this.parseVaultLink(link);
-                    this.openVault(vaultData);
-                } catch (error) {
-                    this.showModal('Fehler', 'Link konnte nicht verarbeitet werden: ' + error.message);
-                }
-            }
-
-            parseVaultLink(link) {
-                try {
-                    // Parse tapvault://base64encodeddata
-                    const data = link.replace('tapvault://', '');
-                    const decoded = atob(data);
-                    const vaultData = JSON.parse(decoded);
-                    
-                    // Validate required fields
-                    if (!vaultData.encryptedMessage || !vaultData.requiredActions || !vaultData.mode) {
-                        throw new Error('Unvollständige Vault-Daten');
-                    }
-                    
-                    return vaultData;
-                } catch (error) {
-                    throw new Error('Ungültiges Link-Format oder beschädigte Daten');
-                }
-            }
-
-            createVaultLink(vaultData) {
-                const encoded = btoa(JSON.stringify(vaultData));
-                return `tapvault://${encoded}`;
-            }
-
-            // Screen Management
-            showScreen(screenName) {
-                // Hide all screens
-                document.querySelectorAll('.screen').forEach(screen => {
-                    screen.classList.remove('active');
-                });
-                
-                // Show target screen
-                const targetScreen = document.getElementById(`${screenName}Screen`);
-                if (targetScreen) {
-                    targetScreen.classList.add('active');
-                    targetScreen.classList.add('fade-in');
-                }
-                
-                // Update navigation
+                // Navigation
                 document.querySelectorAll('.nav-item').forEach(item => {
-                    item.classList.remove('active');
+                    item.addEventListener('click', () => this.navigateTo(item.dataset.screen));
                 });
-                
-                const activeNavItem = document.querySelector(`[data-screen="${screenName}"]`);
-                if (activeNavItem) {
-                    activeNavItem.classList.add('active');
-                }
-                
-                this.currentScreen = screenName;
-                
-                // Screen-specific initialization
-                if (screenName === 'scanner') {
-                    this.startCamera();
-                } else {
-                    this.stopCamera();
-                }
 
-                // Clear form when switching screens
-                if (screenName === 'create') {
-                    this.resetCreateForm();
-                } else if (screenName === 'scanner') {
-                    document.getElementById('linkInput').value = '';
-                }
-            }
-
-            resetCreateForm() {
-                document.getElementById('messageInput').value = '';
-                document.getElementById('titleInput').value = '';
-                document.getElementById('actionSlider').value = this.settings.defaultActions || 50;
-                this.updateSliderValue({ target: document.getElementById('actionSlider') });
-                
-                const modeToggle = document.getElementById('modeToggle');
-                if (this.settings.defaultMode === 'shake') {
-                    modeToggle.classList.add('active');
-                    document.getElementById('modeLabel').textContent = 'Shake-Modus';
-                    document.getElementById('actionLabel').textContent = 'Schüttelungen erforderlich';
-                } else {
-                    modeToggle.classList.remove('active');
-                    document.getElementById('modeLabel').textContent = 'Tap-Modus';
-                    document.getElementById('actionLabel').textContent = 'Taps erforderlich';
-                }
-            }
-
-            // Vault Creation
-            async createVault() {
-                const message = document.getElementById('messageInput').value.trim();
-                const title = document.getElementById('titleInput').value.trim() || 'Geheimer Tresor';
-                const mode = document.getElementById('modeToggle').classList.contains('active') ? 'shake' : 'tap';
-                const requiredActions = parseInt(document.getElementById('actionSlider').value);
-                
-                if (!message) {
-                    this.showModal('Fehler', 'Bitte geben Sie eine Nachricht ein.');
-                    return;
-                }
-                
-                if (message.length > 10000) {
-                    this.showModal('Fehler', 'Die Nachricht ist zu lang. Maximal 10.000 Zeichen erlaubt.');
-                    return;
-                }
-                
-                try {
-                    // Show loading state
-                    const createButton = document.getElementById('createButton');
-                    const originalText = createButton.innerHTML;
-                    createButton.innerHTML = '🔄 Erstelle Tresor...';
-                    createButton.disabled = true;
-                    
-                    // Create unique password from actions and additional entropy
-                    const timestamp = Date.now();
-                    const entropy = crypto.getRandomValues(new Uint8Array(16));
-                    const entropyStr = Array.from(entropy, byte => byte.toString(16).padStart(2, '0')).join('');
-                    const password = this.generatePassword(requiredActions, mode, timestamp, entropyStr);
-                    
-                    // Encrypt message with AES-256-GCM
-                    const encryptedMessage = await this.encryptMessage(message, password);
-                    
-                    // Create vault data
-                    const vaultData = {
-                        version: '3.0',
-                        title: title,
-                        encryptedMessage: encryptedMessage,
-                        requiredActions: requiredActions,
-                        mode: mode,
-                        created: new Date().toISOString(),
-                        algorithm: 'AES-256-GCM',
-                        timestamp: timestamp,
-                        entropy: entropyStr
-                    };
-                    
-                    // Create shareable link
-                    const vaultLink = this.createVaultLink(vaultData);
-                    
-                    // Generate QR code
-                    await this.generateQRCode(vaultLink);
-                    
-                    // Store link for sharing
-                    this.currentVaultLink = vaultLink;
-                    
-                    // Update recent vaults
-                    this.addToRecentVaults(vaultData);
-                    
-                    // Show result screen
-                    this.showScreen('result');
-                    
-                    // Reset button state
-                    createButton.innerHTML = originalText;
-                    createButton.disabled = false;
-                    
-                } catch (error) {
-                    console.error('Vault creation error:', error);
-                    this.showModal('Fehler', 'Tresor konnte nicht erstellt werden: ' + error.message);
-                    
-                    // Reset button state
-                    const createButton = document.getElementById('createButton');
-                    createButton.innerHTML = '🔒 Tresor erstellen';
-                    createButton.disabled = false;
-                }
-            }
-
-            generatePassword(actions, mode, timestamp, entropy) {
-                // Generate secure deterministic password
-                const seed = `${actions}-${mode}-${timestamp}-${entropy}-tapvault-v3`;
-                // Use a more complex derivation for better security
-                return btoa(seed + crypto.getRandomValues(new Uint8Array(32)).join('')).replace(/[^a-zA-Z0-9]/g, '').substring(0, 64);
-            }
-
-            async generateQRCode(data) {
-                const qrContainer = document.getElementById('qrcode');
-                qrContainer.innerHTML = '';
-                
-                try {
-                    await QRCode.toCanvas(qrContainer, data, {
-                        width: 280,
-                        margin: 2,
-                        color: {
-                            dark: '#000000',
-                            light: '#ffffff'
-                        },
-                        errorCorrectionLevel: 'M'
-                    });
-                } catch (error) {
-                    console.error('QR-Code Generation fehlgeschlagen:', error);
-                    qrContainer.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-secondary);">QR-Code Generation fehlgeschlagen</div>';
-                }
-            }
-
-            copyVaultLink() {
-                if (this.currentVaultLink) {
-                    navigator.clipboard.writeText(this.currentVaultLink).then(() => {
-                        this.showModal('Erfolg', 'Link wurde in die Zwischenablage kopiert.');
-                        this.hapticFeedback();
-                    }).catch(() => {
-                        // Fallback for older browsers
-                        const textArea = document.createElement('textarea');
-                        textArea.value = this.currentVaultLink;
-                        document.body.appendChild(textArea);
-                        textArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textArea);
-                        this.showModal('Erfolg', 'Link wurde kopiert.');
-                    });
-                }
-            }
-
-            shareVaultLink() {
-                if (this.currentVaultLink && navigator.share) {
-                    navigator.share({
-                        title: 'TapVault - Sicherer Tresor',
-                        text: 'Öffnen Sie diesen verschlüsselten Tresor mit TapVault',
-                        url: this.currentVaultLink
-                    }).catch(console.error);
-                } else {
-                    this.copyVaultLink();
-                }
-            }
-
-            // Vault Opening
-            openVault(vaultData) {
-                this.unlockState = {
-                    currentActions: 0,
-                    requiredActions: vaultData.requiredActions,
-                    mode: vaultData.mode,
-                    vaultData: vaultData,
-                    isShakeMode: vaultData.mode === 'shake',
-                    decryptedMessage: null
-                };
-                
-                // Update UI
-                document.getElementById('unlockTitle').textContent = vaultData.title;
-                document.getElementById('requiredActions').textContent = vaultData.requiredActions;
-                document.getElementById('unlockMode').textContent = vaultData.mode === 'shake' ? 'Schüttelungen' : 'Taps';
-                document.getElementById('progressText').textContent = `0 / ${vaultData.requiredActions}`;
-                document.getElementById('progressSubtitle').textContent = vaultData.mode === 'shake' ? 'Schüttelungen ausgeführt' : 'Taps ausgeführt';
-                document.getElementById('unlockButtonText').textContent = vaultData.mode === 'shake' ? 'SHAKE' : 'TAP';
-                
-                // Update button style
-                const unlockButton = document.getElementById('unlockButton');
-                if (vaultData.mode === 'shake') {
-                    unlockButton.classList.add('shake-mode');
-                } else {
-                    unlockButton.classList.remove('shake-mode');
-                }
-                
-                // Reset progress
-                this.updateProgress(0, vaultData.requiredActions);
-                
-                // Hide decrypted message
-                document.getElementById('decryptedMessage').classList.add('hidden');
-                document.getElementById('unlockButton').style.display = 'flex';
-                
-                this.showScreen('unlock');
-            }
-
-            // Unlock Interaction
-            handleUnlockAction() {
-                if (!this.unlockState.vaultData) return;
-                
-                this.unlockState.currentActions++;
-                this.hapticFeedback();
-                
-                // Add visual feedback
-                const unlockButton = document.getElementById('unlockButton');
-                unlockButton.classList.add('pulse');
-                setTimeout(() => unlockButton.classList.remove('pulse'), 300);
-                
-                // Update progress
-                this.updateProgress(this.unlockState.currentActions, this.unlockState.requiredActions);
-                document.getElementById('progressText').textContent = 
-                    `${this.unlockState.currentActions} / ${this.unlockState.requiredActions}`;
-                
-                // Check if unlock is complete
-                if (this.unlockState.currentActions >= this.unlockState.requiredActions) {
-                    this.completeUnlock();
-                }
-            }
-
-            async completeUnlock() {
-                try {
-                    const vaultData = this.unlockState.vaultData;
-                    const password = this.generatePassword(
-                        vaultData.requiredActions, 
-                        vaultData.mode, 
-                        vaultData.timestamp, 
-                        vaultData.entropy
-                    );
-                    
-                    // Decrypt message
-                    const decryptedMessage = await this.decryptMessage(vaultData.encryptedMessage, password);
-                    
-                    // Show decrypted message
-                    document.getElementById('decryptedText').textContent = decryptedMessage;
-                    document.getElementById('decryptedMessage').classList.remove('hidden');
-                    
-                    // Hide unlock button
-                    document.getElementById('unlockButton').style.display = 'none';
-                    document.getElementById('progressText').textContent = '🎉 Erfolgreich entschlüsselt!';
-                    document.getElementById('progressSubtitle').textContent = 'Tresor wurde geöffnet';
-                    
-                    this.unlockState.decryptedMessage = decryptedMessage;
-                    this.hapticFeedback();
-                    
-                } catch (error) {
-                    console.error('Decryption error:', error);
-                    this.showModal('Entschlüsselungsfehler', 'Die Nachricht konnte nicht entschlüsselt werden. Möglicherweise sind die Daten beschädigt.');
-                }
-            }
-
-            copyDecryptedMessage() {
-                if (this.unlockState.decryptedMessage) {
-                    navigator.clipboard.writeText(this.unlockState.decryptedMessage).then(() => {
-                        this.showModal('Erfolg', 'Nachricht wurde in die Zwischenablage kopiert.');
-                        this.hapticFeedback();
-                    }).catch(() => {
-                        this.showModal('Fehler', 'Nachricht konnte nicht kopiert werden.');
-                    });
-                }
-            }
-
-            // Progress Management
-            updateProgress(current, total) {
-                const progress = (current / total) * 100;
-                const circumference = 2 * Math.PI * 54;
-                const offset = circumference - (progress / 100) * circumference;
-                
-                const progressCircle = document.getElementById('progressCircle');
-                progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
-                progressCircle.style.strokeDashoffset = offset;
-            }
-
-            // Mode Toggle
-            toggleMode() {
-                const modeToggle = document.getElementById('modeToggle');
-                const modeLabel = document.getElementById('modeLabel');
-                const actionLabel = document.getElementById('actionLabel');
-                
-                modeToggle.classList.toggle('active');
-                
-                if (modeToggle.classList.contains('active')) {
-                    modeLabel.textContent = 'Shake-Modus';
-                    actionLabel.textContent = 'Schüttelungen erforderlich';
-                } else {
-                    modeLabel.textContent = 'Tap-Modus';
-                    actionLabel.textContent = 'Taps erforderlich';
-                }
-                
-                this.hapticFeedback();
-            }
-
-            // Slider Value Update
-            updateSliderValue(e) {
-                const value = e.target.value;
-                document.getElementById('actionValue').textContent = value;
-            }
-
-            // Shake Detection
-            setupShakeDetection() {
-                if (window.DeviceMotionEvent) {
-                    window.addEventListener('devicemotion', (e) => {
-                        if (this.unlockState.isShakeMode && this.currentScreen === 'unlock') {
-                            this.detectShake(e);
-                        }
-                    });
-                }
-            }
-
-            detectShake(event) {
-                const acceleration = event.accelerationIncludingGravity;
-                if (!acceleration) return;
-                
-                const x = acceleration.x;
-                const y = acceleration.y;
-                const z = acceleration.z;
-                
-                if (this.lastX !== null && this.lastY !== null && this.lastZ !== null) {
-                    const deltaX = Math.abs(x - this.lastX);
-                    const deltaY = Math.abs(y - this.lastY);
-                    const deltaZ = Math.abs(z - this.lastZ);
-                    
-                    if ((deltaX + deltaY + deltaZ) > this.shakeThreshold) {
-                        const now = Date.now();
-                        if (now - this.lastShakeTime > 200) { // Prevent too frequent shake detection
-                            this.handleUnlockAction();
-                            this.lastShakeTime = now;
-                            
-                            // Visual shake feedback
-                            const unlockButton = document.getElementById('unlockButton');
-                            unlockButton.classList.add('shake-animation');
-                            setTimeout(() => unlockButton.classList.remove('shake-animation'), 500);
-                        }
-                    }
-                }
-                
-                this.lastX = x;
-                this.lastY = y;
-                this.lastZ = z;
-            }
-
-            // Theme Management
-            toggleTheme() {
-                const body = document.body;
-                const themeToggle = document.getElementById('themeToggle');
-                const darkModeToggle = document.getElementById('darkModeToggle');
-                
-                if (body.dataset.theme === 'dark') {
-                    body.dataset.theme = 'light';
-                    themeToggle.textContent = '☀️';
-                    darkModeToggle.classList.remove('active');
-                    this.settings.darkMode = false;
-                } else {
-                    body.dataset.theme = 'dark';
-                    themeToggle.textContent = '🌙';
-                    darkModeToggle.classList.add('active');
-                    this.settings.darkMode = true;
-                }
-                
-                this.saveSettings();
-                this.hapticFeedback();
-            }
-
-            // Settings
-            toggleDefaultMode() {
-                const toggle = document.getElementById('defaultModeToggle');
-                toggle.classList.toggle('active');
-                
-                this.settings.defaultMode = toggle.classList.contains('active') ? 'shake' : 'tap';
-                this.saveSettings();
-                this.hapticFeedback();
-            }
-
-            toggleHaptic() {
-                const toggle = document.getElementById('hapticToggle');
-                toggle.classList.toggle('active');
-                
-                this.settings.hapticFeedback = toggle.classList.contains('active');
-                this.saveSettings();
-                this.hapticFeedback();
-            }
-
-            updateDefaultActions(e) {
-                const value = parseInt(e.target.value);
-                if (value >= 1 && value <= 1000) {
-                    this.settings.defaultActions = value;
-                    this.saveSettings();
-                }
-            }
-
-            // Haptic Feedback
-            hapticFeedback() {
-                if (this.settings.hapticFeedback && navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-            }
-
-            // Modal Management
-            showModal(title, text, confirmCallback = null) {
-                document.getElementById('modalTitle').textContent = title;
-                document.getElementById('modalText').textContent = text;
-                document.getElementById('modal').classList.add('active');
-                
-                if (confirmCallback) {
-                    document.getElementById('modalConfirm').onclick = () => {
-                        confirmCallback();
-                        this.closeModal();
-                    };
-                    document.getElementById('modalConfirm').style.display = 'flex';
-                } else {
-                    document.getElementById('modalConfirm').style.display = 'none';
-                }
-            }
-
-            closeModal() {
-                document.getElementById('modal').classList.remove('active');
-            }
-
-            // Deep Link Handling
-            checkDeepLink() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const vault = urlParams.get('vault');
-                
-                if (vault) {
-                    try {
-                        const vaultData = this.parseVaultLink('tapvault://' + vault);
-                        this.openVault(vaultData);
-                    } catch (error) {
-                        this.showModal('Fehler', 'Ungültiger Vault-Link in der URL.');
-                    }
-                }
-            }
-        }
-
-        // Initialize App
-        document.addEventListener('DOMContentLoaded', () => {
-            new TapVaultApp();
-        });
-    </script>
-</body>
-</html>
+                // Quick actions
+                document.getElementById('createVaultButton').addEventListener('click', () => this.navigateTo('create'));
+                document.getElementById('openVaultButton').addEventListener('click', () => this.navigateTo('scanner'));
+                document.getElementById('scan
